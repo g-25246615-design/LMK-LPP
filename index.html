@@ -33,7 +33,7 @@
         
         table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 11px; }
         th, td { padding: 8px; border: 1px solid #cbd5e1; text-align: left; vertical-align: middle; }
-        th { background: #f1f5f9; color: #1e293b; text-align: center; }
+        th { background: #0284c7; color: white; text-align: center; }
 
         button { background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 14px; padding: 10px 15px; }
         button:hover { background: #1d4ed8; }
@@ -64,7 +64,7 @@
     <div class="menu-item" onclick="show('modulKelab', event)">🏢 Master Kelab / Unit</div>
     <div class="menu-item" onclick="show('modulGuru', event)">👨‍🏫 Master Guru & Tugas Khas</div>
     <div class="menu-item" onclick="show('modulTakwim', event)">📅 Takwim Sekolah</div>
-    <div class="menu-item" onclick="show('modulJadual', event)">🕒 Jadual Induk Matriks</div>
+    <div class="menu-item" onclick="show('modulJadual', event)">🕒 Jadual Perjumpaan Induk</div>
     
     <div class="menu-category">Modul Pelaporan & RAT</div>
     <div class="menu-item" onclick="show('jadualTugasGuru', event)">📌 Jadual Tugas & Semakan</div>
@@ -264,46 +264,39 @@
         </table>
     </div>
 
-    <!-- 5. JADUAL INDUK MATRIKS -->
+    <!-- 5. JADUAL PERJUMPAAN INDUK (MENGIKUT BLOK RASMI SEKOLAH) -->
     <div id="modulJadual" class="card hidden">
-        <h2>Tetapan Jadual Induk Matriks Mingguan</h2>
+        <h2>Jadual Perjumpaan Mingguan Kokum 2026 (SSOT)</h2>
         
         <div style="margin-bottom: 20px; background: #eff6ff; border: 1px solid #bfdbfe; padding: 15px; border-radius: 8px;">
-            <h3 style="margin-top:0; color:#1e40af; font-size:15px;">⚡ Enjin Automasi SSOT</h3>
-            <p style="font-size:13px; color:#1e3a8a; margin-bottom: 10px;">Tekan butang di bawah untuk menyusun dan mengagihkan nama guru bertugas secara sama rata (giliran) merentasi semua minggu berdasarkan data unit yang didaftarkan dalam <b>Master Guru</b>.</p>
-            <button type="button" onclick="janaJadualAutomatikSSOT()" style="background:#f59e0b;">⚡ Jana Jadual Automatik (SSOT)</button>
+            <h3 style="margin-top:0; color:#1e40af; font-size:15px;">⚡ Enjin Agihan Tugas Automatik (SSOT)</h3>
+            <p style="font-size:13px; color:#1e3a8a; margin-bottom: 10px;">Tekan butang di bawah untuk mengagihkan nama guru bertugas secara sama rata (giliran) ke dalam jadual rasmi sekolah berdasarkan data dari <b>Master Guru</b>.</p>
+            <button type="button" onclick="janaJadualAutomatikSSOT()" style="background:#f59e0b;">⚡ Jana Agihan Guru Automatik</button>
         </div>
 
         <form onsubmit="simpanMaster('jadual', event)" style="background:#f8fafc; padding:20px; border-radius:8px; border:1px solid #e2e8f0; margin-bottom:20px;">
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:15px;">
                 <div class="form-group"><label>Minggu:</label><input type="text" id="jMinggu" placeholder="Cth: M2" required></div>
                 <div class="form-group"><label>Tarikh:</label><input type="date" id="jTarikh" required></div>
+                <div class="form-group"><label>Hari:</label><input type="text" id="jHari" value="RABU" required></div>
             </div>
             
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
-                <div class="form-group"><label>Info UBB (Aktiviti/Siri):</label><input type="text" id="jInfoUBB" placeholder="Cth: UBB 1 / Mesyuarat Agung" required></div>
-                <div class="form-group"><label>Guru Pengakap:</label><input type="text" id="jPengakap" placeholder="Nama Guru"></div>
-            </div>
-            
-            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:15px;">
-                <div class="form-group"><label>Guru TKRS:</label><input type="text" id="jTkrs" placeholder="Nama Guru"></div>
-                <div class="form-group"><label>Info UKP:</label><input type="text" id="jInfoUKP" placeholder="Cth: UKP 1" required></div>
-                <div class="form-group"><label>Guru PAI:</label><input type="text" id="jPai" placeholder="Nama Guru"></div>
+            <div style="display:grid; grid-template-columns: 1fr 2fr; gap:15px;">
+                <div class="form-group"><label>Masa 1 (UBB):</label><input type="text" id="jMasa1" value="11:40 AM - 12:40 PM"></div>
+                <div class="form-group"><label>Aktiviti / Info UBB:</label><input type="text" id="jInfoUBB" placeholder="Cth: UBB 2 / Mesyuarat Agung" required></div>
             </div>
 
-            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:15px;">
-                <div class="form-group"><label>Guru PBI:</label><input type="text" id="jPbi" placeholder="Nama Guru"></div>
-                <div class="form-group"><label>Guru KPA:</label><input type="text" id="jKpa" placeholder="Nama Guru"></div>
-                <div class="form-group"><label>Info USP:</label><input type="text" id="jInfoUSP" placeholder="Cth: USP 1" required></div>
+            <div style="display:grid; grid-template-columns: 1fr 2fr; gap:15px;">
+                <div class="form-group"><label>Masa 2 (UKP):</label><input type="text" id="jMasa2" value="12:40 PM - 1:40 PM"></div>
+                <div class="form-group"><label>Aktiviti / Info UKP:</label><input type="text" id="jInfoUKP" placeholder="Cth: UKP 2 / Tiada" required></div>
             </div>
 
-            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:15px;">
-                <div class="form-group"><label>Guru KC:</label><input type="text" id="jKc" placeholder="Nama Guru"></div>
-                <div class="form-group"><label>Guru KBS:</label><input type="text" id="jKbs" placeholder="Nama Guru"></div>
-                <div class="form-group"><label>Guru KBB:</label><input type="text" id="jKbb" placeholder="Nama Guru"></div>
+            <div style="display:grid; grid-template-columns: 1fr 2fr; gap:15px;">
+                <div class="form-group"><label>Masa 3 (USP):</label><input type="text" id="jMasa3" value="1:00 PM - 1:40 PM"></div>
+                <div class="form-group"><label>Aktiviti / Info USP:</label><input type="text" id="jInfoUSP" placeholder="Cth: USP 2 / Tiada" required></div>
             </div>
 
-            <button type="submit" id="btnSimpanJadual" style="margin-top: 10px;">Simpan Baris Jadual</button>
+            <button type="submit" id="btnSimpanJadual" style="margin-top: 10px;">Simpan Baris Perjumpaan</button>
         </form>
         
         <div class="table-matrix-container">
@@ -312,17 +305,13 @@
                     <tr>
                         <th>MINGGU</th>
                         <th>TARIKH</th>
-                        <th>UBB</th>
-                        <th>PENGAKAP</th>
-                        <th>TKRS</th>
-                        <th>UKP</th>
-                        <th>PAI</th>
-                        <th>PBI</th>
-                        <th>KPA</th>
-                        <th>USP</th>
-                        <th>KC</th>
-                        <th>KBS</th>
-                        <th>KBB</th>
+                        <th>HARI</th>
+                        <th>MASA UBB & AKTIVITI</th>
+                        <th>GURU UBB</th>
+                        <th>MASA UKP & AKTIVITI</th>
+                        <th>GURU UKP</th>
+                        <th>MASA USP & AKTIVITI</th>
+                        <th>GURU USP</th>
                         <th style="text-align:center;">Tindakan</th>
                     </tr>
                 </thead>
@@ -335,7 +324,7 @@
     <div id="jadualTugasGuru" class="card">
         <h2>📌 JADUAL GURU BERTUGAS KOKURIKULUM 2026</h2>
         <div class="notice-box">
-            💡 <b>Panduan Guru:</b> Paparan ini menyelaraskan jadual matriks mingguan mengikut format rasmi sekolah. Sila semak nama anda di bawah mengikut minggu dan unit yang dipertanggungjawabkan.
+            💡 <b>Panduan Guru:</b> Paparan rasmi jadual perjumpaan mingguan mengikut blok masa sekolah. Nama guru bertugas dikemas kini secara automatik berdasarkan pangkalan data SSOT.
         </div>
         <div class="table-matrix-container">
             <table>
@@ -343,17 +332,10 @@
                     <tr style="background: #2563eb; color: white;">
                         <th>MINGGU</th>
                         <th>TARIKH</th>
-                        <th>UBB</th>
-                        <th>PENGAKAP</th>
-                        <th>TKRS</th>
-                        <th>UKP</th>
-                        <th>PAI</th>
-                        <th>PBI</th>
-                        <th>KPA</th>
-                        <th>USP</th>
-                        <th>KC</th>
-                        <th>KBS</th>
-                        <th>KBB</th>
+                        <th>HARI</th>
+                        <th>UBB (Aktiviti & Guru)</th>
+                        <th>UKP (Aktiviti & Guru)</th>
+                        <th>USP (Aktiviti & Guru)</th>
                     </tr>
                 </thead>
                 <tbody id="tabel_jadual_tugas_view"></tbody>
@@ -372,12 +354,11 @@
             </div>
         </div>
         <div class="report-container">
-            <div class="report-header" id="ratHeaderTitle">
-                RANCANGAN AKTIVITI TAHUNAN<br>PENGAKAP<br>2026
-            </div>
+            <div class="report-header" id="ratHeaderTitle">RANCANGAN AKTIVITI TAHUNAN (RAT)<br>2026</div>
             <table>
                 <thead>
                     <tr>
+                        <th style="width:60px;">SIRI</th>
                         <th style="width:80px;">MINGGU</th>
                         <th style="width:120px;">TARIKH</th>
                         <th>AKTIVITI / INFO</th>
@@ -391,31 +372,27 @@
     <!-- 7. LAPORAN MINGGUAN (LMK) -->
     <div id="laporanMingguan" class="card hidden">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap: wrap; gap: 10px;">
-            <h2 style="margin:0; border:none;">Pilih Minggu & Unit untuk LMK</h2>
+            <h2 style="margin:0; border:none;">Laporan Mingguan Kokurikulum (LMK)</h2>
             <div style="display:flex; gap:10px; align-items:center;">
                 <select id="pilihKelabCetak" onchange="muatDataLMKByBil()" style="padding:8px; font-weight:bold;"></select>
                 <select id="pilihBilCetak" onchange="muatDataLMKByBil()" style="padding:8px; font-weight:bold;"></select>
                 <button onclick="window.print()" style="background:#10b981;">🖨️ Cetak LMK</button>
             </div>
         </div>
-
         <div class="report-container">
             <div class="report-header" id="lmkHeaderKategori">
-                PELAPORAN KOKURIKULUM<br>
-                LAPORAN MINGGUAN KOKURIKULUM (LMK)<br>
-                UNIT KOKURIKULUM<br>
-                SK DOGOTON BANGGI KUDAT
+                PELAPORAN KOKURIKULUM<br>LAPORAN MINGGUAN KOKURIKULUM (LMK)<br>SK DOGOTON BANGGI KUDAT
             </div>
             <div style="display:grid; grid-template-columns: 150px 1fr; gap:5px; font-size:13px; margin-bottom:15px;">
                 <div><b>TARIKH</b></div><div id="lmk_tarikh">: -</div>
-                <div><b>MASA</b></div><div>: 11:40 AM - 12:40 PM</div>
+                <div><b>MASA</b></div><div id="lmk_masa">: 11:40 AM - 12:40 PM</div>
                 <div><b>UNIT / KELAB</b></div><div id="lmk_unit_nama" style="font-weight:bold;">: -</div>
-                <div><b>MINGGU</b></div><div id="lmk_bil">: -</div>
+                <div><b>SIRI PERJUMPAAN</b></div><div id="lmk_bil">: -</div>
             </div>
             <table>
                 <thead>
                     <tr>
-                        <th style="width:50px;">MINGGU</th>
+                        <th>SIRI / MINGGU</th>
                         <th>UNIT</th>
                         <th>AKTIVITI</th>
                         <th>GURU BERTUGAS</th>
@@ -444,13 +421,10 @@
             </div>
         </div>
         <div class="report-container" style="overflow-x:auto;">
-            <div class="report-header" id="laporanTahunanHeaderTitle">
-                LAPORAN TAHUNAN KOKURIKULUM — RUMUSAN SIRI<br>
-                SK DOGOTON BANGGI KUDAT 2026
-            </div>
+            <div class="report-header" id="laporanTahunanHeaderTitle">LAPORAN TAHUNAN KOKURIKULUM — RUMUSAN SIRI</div>
             <table>
                 <thead>
-                    <tr><th>MINGGU</th><th>TARIKH</th><th>AKTIVITI / INFO</th></tr>
+                    <tr><th>SIRI</th><th>MINGGU</th><th>TARIKH</th><th>AKTIVITI / INFO</th></tr>
                 </thead>
                 <tbody id="tabel_laporan_tahunan_view"></tbody>
             </table>
@@ -470,7 +444,7 @@
         <div class="report-container">
             <div class="report-header" id="pemantauanHeaderTitle">LAPORAN PEMANTAUAN KOKURIKULUM 2026</div>
             <table>
-                <thead><tr><th>MINGGU</th><th>TARIKH</th><th>STATUS</th></tr></thead>
+                <thead><tr><th>SIRI</th><th>MINGGU</th><th>TARIKH</th><th>STATUS</th></tr></thead>
                 <tbody id="tabel_pemantauan_view"></tbody>
             </table>
         </div>
@@ -536,69 +510,46 @@
         
         localStorage.setItem('db_jadual', JSON.stringify([
             { 
-                minggu: "M2", tarikh: "2026-01-21", 
-                infoUBB: "PERHIMPUNAN BULANAN / MESYUARAT AGUNG", pengakap: "WAXRY DE VALNO MASHRINU", tkrs: "MUHAMAD HISHAMUDDIN BIN HAMID", 
-                infoUKP: "PERHIMPUNAN BULANAN / MESYUARAT AGUNG", pai: "AHMAD SAFWAN BIN JAMALUDIN", pbi: "SHIRAH SYATIKAH BINTI RAMLEE", kpa: "MOHD AZMIN BIN SUDIRMAN", 
-                infoUSP: "PERHIMPUNAN BULANAN / MESYUARAT AGUNG", kc: "FLORYNAH BAKAR", kbs: "MOHD AZMIN BIN SUDIRMAN", kbb: "RACHEL MANJIL" 
+                minggu: "M2", tarikh: "2026-01-21", hari: "RABU",
+                masa1: "11:40 AM - 12:20 PM", infoUBB: "PERHIMPUNAN BULANAN / MESYUARAT AGUNG", guruUBB: "WAXRY DE VALNO MASHRINU", 
+                masa2: "12:20 PM - 1:00 PM", infoUKP: "PERHIMPUNAN BULANAN / MESYUARAT AGUNG", guruUKP: "AHMAD SAFWAN BIN JAMALUDIN", 
+                masa3: "1:00 PM - 1:40 PM", infoUSP: "PERHIMPUNAN BULANAN / MESYUARAT AGUNG", guruUSP: "FLORYNAH BAKAR" 
             },
             { 
-                minggu: "M3", tarikh: "2026-01-28", 
-                infoUBB: "UBB 2", pengakap: "AHMAD SAFWAN BIN JAMALUDIN", tkrs: "FLORYNAH BAKAR", 
-                infoUKP: "UKP 2", pai: "AHMAD SAFWAN BIN JAMALUDIN", pbi: "RACHEL MANJIL", kpa: "FLORYNAH BAKAR", 
-                infoUSP: "-", kc: "-", kbs: "-", kbb: "-" 
+                minggu: "M3", tarikh: "2026-01-28", hari: "RABU",
+                masa1: "11:40 AM - 12:40 PM", infoUBB: "UBB 2", guruUBB: "AHMAD SAFWAN BIN JAMALUDIN", 
+                masa2: "12:40 PM - 1:40 PM", infoUKP: "UKP 2", guruUKP: "RACHEL MANJIL", 
+                masa3: "1:00 PM - 1:40 PM", infoUSP: "-", guruUSP: "-" 
             }
         ]));
     }
 
-    // FUNGSI SSOT: AGIHAN TUGAS GURU SECARA AUTOMATIK (GILIRAN / ROUND-ROBIN)
+    // ENJIN SSOT: AGIHAN GURU AUTOMATIK BERDASARKAN BLOK PERJUMPAAN
     function janaJadualAutomatikSSOT() {
         let guruList = JSON.parse(localStorage.getItem('db_guru')) || [];
         let jadualList = JSON.parse(localStorage.getItem('db_jadual')) || [];
 
-        if (guruList.length === 0) {
-            alert("Sila daftar maklumat guru terlebih dahulu di modul Master Guru!");
-            return;
-        }
-        if (jadualList.length === 0) {
-            alert("Sila masukkan jadual perjumpaan/minggu terlebih dahulu di Jadual Induk Matriks!");
-            return;
-        }
+        if (guruList.length === 0) { alert("Sila daftar maklumat guru terlebih dahulu di Master Guru!"); return; }
+        if (jadualList.length === 0) { alert("Sila masukkan jadual perjumpaan terlebih dahulu!"); return; }
 
-        const unitMapping = [
-            { key: 'pengakap', prop: 'ubb', nameCheck: 'PENGAKAP' },
-            { key: 'tkrs', prop: 'ubb', nameCheck: 'TKRS' },
-            { key: 'pai', prop: 'ukp', nameCheck: 'PAI' },
-            { key: 'pbi', prop: 'ukp', nameCheck: 'PBI' },
-            { key: 'kpa', prop: 'ukp', nameCheck: 'KPA' },
-            { key: 'kc', prop: 'usp', nameCheck: 'KC' },
-            { key: 'kbs', prop: 'usp', nameCheck: 'KBS' },
-            { key: 'kbb', prop: 'usp', nameCheck: 'KBB' }
-        ];
+        let ubbTeachers = guruList.filter(g => g.ubb && g.ubb.trim() !== "");
+        let ukpTeachers = guruList.filter(g => g.ukp && g.ukp.trim() !== "");
+        let uspTeachers = guruList.filter(g => g.usp && g.usp.trim() !== "");
 
-        let unitTeachers = {};
-        unitMapping.forEach(u => {
-            unitTeachers[u.key] = guruList.filter(g => {
-                let val = (g[u.prop] || "").toUpperCase();
-                return val.includes(u.nameCheck);
-            });
-        });
+        jadualList.forEach((row, index) => {
+            if (ubbTeachers.length > 0) row.guruUBB = ubbTeachers[index % ubbTeachers.length].nama;
+            else row.guruUBB = "-";
 
-        // Agih sama rata mengikut baris minggu (giliran)
-        jadualList.forEach((row, rowIndex) => {
-            unitMapping.forEach(u => {
-                let teachers = unitTeachers[u.key];
-                if (teachers && teachers.length > 0) {
-                    let assignedTeacher = teachers[rowIndex % teachers.length];
-                    row[u.key] = assignedTeacher.nama;
-                } else {
-                    if (!row[u.key]) row[u.key] = '-';
-                }
-            });
+            if (ukpTeachers.length > 0) row.guruUKP = ukpTeachers[index % ukpTeachers.length].nama;
+            else row.guruUKP = "-";
+
+            if (uspTeachers.length > 0) row.guruUSP = uspTeachers[index % uspTeachers.length].nama;
+            else row.guruUSP = "-";
         });
 
         localStorage.setItem('db_jadual', JSON.stringify(jadualList));
         muatSemuaData();
-        alert("⚡ Jadual berjaya dijana secara automatik! Tugas telah diagihkan sama rata mengikut Master Guru (SSOT). Anda boleh klik butang Edit pada mana-mana baris jika perlu menukar guru yang bertugas di luar.");
+        alert("⚡ Jadual agihan guru berjaya dijana secara automatik mengikut Master Guru (SSOT)!");
     }
 
     function editJadual(index) {
@@ -608,21 +559,17 @@
 
         document.getElementById('jMinggu').value = item.minggu || '';
         document.getElementById('jTarikh').value = item.tarikh || '';
+        document.getElementById('jHari').value = item.hari || 'RABU';
+        document.getElementById('jMasa1').value = item.masa1 || '';
         document.getElementById('jInfoUBB').value = item.infoUBB || '';
-        document.getElementById('jPengakap').value = item.pengakap || '';
-        document.getElementById('jTkrs').value = item.tkrs || '';
+        document.getElementById('jMasa2').value = item.masa2 || '';
         document.getElementById('jInfoUKP').value = item.infoUKP || '';
-        document.getElementById('jPai').value = item.pai || '';
-        document.getElementById('jPbi').value = item.pbi || '';
-        document.getElementById('jKpa').value = item.kpa || '';
+        document.getElementById('jMasa3').value = item.masa3 || '';
         document.getElementById('jInfoUSP').value = item.infoUSP || '';
-        document.getElementById('jKc').value = item.kc || '';
-        document.getElementById('jKbs').value = item.kbs || '';
-        document.getElementById('jKbb').value = item.kbb || '';
 
         editIndexJadual = index;
         let submitBtn = document.getElementById('btnSimpanJadual');
-        if (submitBtn) submitBtn.innerText = "Kemaskini Baris Jadual";
+        if (submitBtn) submitBtn.innerText = "Kemaskini Baris Perjumpaan";
         
         document.getElementById('jMinggu').scrollIntoView({ behavior: 'smooth' });
     }
@@ -703,31 +650,33 @@
             dataBaru = { 
                 minggu: document.getElementById('jMinggu').value, 
                 tarikh: document.getElementById('jTarikh').value, 
+                hari: document.getElementById('jHari').value,
+                masa1: document.getElementById('jMasa1').value,
                 infoUBB: document.getElementById('jInfoUBB').value, 
-                pengakap: document.getElementById('jPengakap').value || '-', 
-                tkrs: document.getElementById('jTkrs').value || '-',
+                guruUBB: "-",
+                masa2: document.getElementById('jMasa2').value,
                 infoUKP: document.getElementById('jInfoUKP').value, 
-                pai: document.getElementById('jPai').value || '-', 
-                pbi: document.getElementById('jPbi').value || '-', 
-                kpa: document.getElementById('jKpa').value || '-',
+                guruUKP: "-",
+                masa3: document.getElementById('jMasa3').value,
                 infoUSP: document.getElementById('jInfoUSP').value, 
-                kc: document.getElementById('jKc').value || '-', 
-                kbs: document.getElementById('jKbs').value || '-', 
-                kbb: document.getElementById('jKbb').value || '-'
+                guruUSP: "-"
             };
             let db = JSON.parse(localStorage.getItem('db_jadual')) || [];
             if (editIndexJadual >= 0) {
+                dataBaru.guruUBB = db[editIndexJadual].guruUBB || "-";
+                dataBaru.guruUKP = db[editIndexJadual].guruUKP || "-";
+                dataBaru.guruUSP = db[editIndexJadual].guruUSP || "-";
                 db[editIndexJadual] = dataBaru;
                 editIndexJadual = -1;
                 let submitBtn = document.getElementById('btnSimpanJadual');
-                if (submitBtn) submitBtn.innerText = "Simpan Baris Jadual";
+                if (submitBtn) submitBtn.innerText = "Simpan Baris Perjumpaan";
             } else {
                 db.push(dataBaru);
             }
             localStorage.setItem('db_jadual', JSON.stringify(db));
             e.target.reset();
             muatSemuaData();
-            alert("Berjaya disimpan!");
+            alert("Jadual perjumpaan berjaya disimpan!");
             return;
         }
 
@@ -785,17 +734,10 @@
             html += `<tr>
                 <td><b>${item.minggu}</b></td>
                 <td>${item.tarikh}</td>
-                <td>${item.infoUBB}</td>
-                <td>${item.pengakap}</td>
-                <td>${item.tkrs}</td>
-                <td>${item.infoUKP}</td>
-                <td>${item.pai}</td>
-                <td>${item.pbi}</td>
-                <td>${item.kpa}</td>
-                <td>${item.infoUSP}</td>
-                <td>${item.kc}</td>
-                <td>${item.kbs}</td>
-                <td>${item.kbb}</td>
+                <td>${item.hari || 'RABU'}</td>
+                <td><small><b>${item.masa1 || '-'}</b></small><br>${item.infoUBB || '-'}<br><span style="color:#2563eb;"><b>Guru:</b> ${item.guruUBB || '-'}</span></td>
+                <td><small><b>${item.masa2 || '-'}</b></small><br>${item.infoUKP || '-'}<br><span style="color:#7c3aed;"><b>Guru:</b> ${item.guruUKP || '-'}</span></td>
+                <td><small><b>${item.masa3 || '-'}</b></small><br>${item.infoUSP || '-'}<br><span style="color:#059669;"><b>Guru:</b> ${item.guruUSP || '-'}</span></td>
                 <td style="text-align:center; white-space:nowrap;">
                     <button type="button" onclick="editJadual(${index})" style="background:#2563eb; padding:5px 8px; font-size:10px; margin-right:3px;">✏️ Edit</button>
                     <button type="button" class="btn-delete" onclick="padamData('jadual', ${index})">🗑️ Padam</button>
@@ -813,17 +755,10 @@
             html += `<tr>
                 <td><b>${item.minggu}</b></td>
                 <td>${item.tarikh}</td>
-                <td style="background:#e0e7ff;">${item.infoUBB}</td>
-                <td>${item.pengakap}</td>
-                <td>${item.tkrs}</td>
-                <td style="background:#fae8ff;">${item.infoUKP}</td>
-                <td>${item.pai}</td>
-                <td>${item.pbi}</td>
-                <td>${item.kpa}</td>
-                <td style="background:#dcfce7;">${item.infoUSP}</td>
-                <td>${item.kc}</td>
-                <td>${item.kbs}</td>
-                <td>${item.kbb}</td>
+                <td>${item.hari || 'RABU'}</td>
+                <td style="background:#e0e7ff;"><b>${item.infoUBB || '-'}</b><br><small>Masa: ${item.masa1 || '-'}</small><br>👤 ${item.guruUBB || '-'}</td>
+                <td style="background:#fae8ff;"><b>${item.infoUKP || '-'}</b><br><small>Masa: ${item.masa2 || '-'}</small><br>👤 ${item.guruUKP || '-'}</td>
+                <td style="background:#dcfce7;"><b>${item.infoUSP || '-'}</b><br><small>Masa: ${item.masa3 || '-'}</small><br>👤 ${item.guruUSP || '-'}</td>
             </tr>`;
         });
         let el = document.getElementById('tabel_jadual_tugas_view');
@@ -900,17 +835,14 @@
             
             let aktiviti = "-";
             let guru = "-";
-            let kUpper = kelabPilih.toUpperCase();
-            if(kUpper.includes('PENGAKAP')) { aktiviti = item.infoUBB; guru = item.pengakap; }
-            else if(kUpper.includes('TKRS')) { aktiviti = item.infoUBB; guru = item.tkrs; }
-            else if(kUpper.includes('PAI')) { aktiviti = item.infoUKP; guru = item.pai; }
-            else if(kUpper.includes('PBI')) { aktiviti = item.infoUKP; guru = item.pbi; }
-            else if(kUpper.includes('KPA')) { aktiviti = item.infoUKP; guru = item.kpa; }
-            else if(kUpper.includes('KC')) { aktiviti = item.infoUSP; guru = item.kc; }
-            else if(kUpper.includes('KBS')) { aktiviti = item.infoUSP; guru = item.kbs; }
-            else if(kUpper.includes('KBB')) { aktiviti = item.infoUSP; guru = item.kbb; }
-            else { aktiviti = item.infoUBB; guru = item.pengakap; }
+            let masa = "11:40 AM - 12:40 PM";
+            let cat = kelabObj ? kelabObj.kategori : "";
 
+            if(cat.includes('UBB')) { aktiviti = item.infoUBB; guru = item.guruUBB; masa = item.masa1; }
+            else if(cat.includes('UKP')) { aktiviti = item.infoUKP; guru = item.guruUKP; masa = item.masa2; }
+            else if(cat.includes('USP')) { aktiviti = item.infoUSP; guru = item.guruUSP; masa = item.masa3; }
+
+            document.getElementById('lmk_masa').innerText = ": " + masa;
             document.getElementById('lmk_tabel_aktiviti').innerText = aktiviti;
             document.getElementById('lmk_tabel_guru').innerText = guru;
         }
@@ -919,6 +851,9 @@
     function muatRAT() {
         let selectKelabRAT = document.getElementById('pilihKelabRAT');
         let kelabPilih = selectKelabRAT ? selectKelabRAT.value : "PENGAKAP";
+        let dbKelab = JSON.parse(localStorage.getItem('db_kelab')) || [];
+        let kelabObj = dbKelab.find(k => k.nama === kelabPilih);
+        let cat = kelabObj ? kelabObj.kategori : "";
         
         document.getElementById('ratHeaderTitle').innerHTML = `
             RANCANGAN AKTIVITI TAHUNAN (RAT)<br>
@@ -928,13 +863,16 @@
 
         let db = JSON.parse(localStorage.getItem('db_jadual')) || [];
         let html = "";
+        let siriCount = 1;
         db.forEach(item => {
-            let info = item.infoUBB;
-            let kUpper = kelabPilih.toUpperCase();
-            if(kUpper.includes('PAI') || kUpper.includes('PBI') || kUpper.includes('KPA')) info = item.infoUKP;
-            if(kUpper.includes('KC') || kUpper.includes('KBS') || kUpper.includes('KBB')) info = item.infoUSP;
+            let info = "-";
+            if(cat.includes('UBB')) info = item.infoUBB;
+            else if(cat.includes('UKP')) info = item.infoUKP;
+            else if(cat.includes('USP')) info = item.infoUSP;
 
-            html += `<tr><td style="text-align:center;"><b>${item.minggu}</b></td><td>${item.tarikh}</td><td>${info}</td></tr>`;
+            if(info && info !== "-" && info.trim() !== "") {
+                html += `<tr><td style="text-align:center;"><b>Siri ${siriCount++}</b></td><td style="text-align:center;"><b>${item.minggu}</b></td><td>${item.tarikh}</td><td>${info}</td></tr>`;
+            }
         });
         let el = document.getElementById('tabel_rat_view');
         if(el) el.innerHTML = html;
@@ -943,6 +881,9 @@
     function muatLaporanTahunan() {
         let selectKelab = document.getElementById('pilihKelabTahunan');
         let kelabPilih = selectKelab ? selectKelab.value : "PENGAKAP";
+        let dbKelab = JSON.parse(localStorage.getItem('db_kelab')) || [];
+        let kelabObj = dbKelab.find(k => k.nama === kelabPilih);
+        let cat = kelabObj ? kelabObj.kategori : "";
 
         document.getElementById('laporanTahunanHeaderTitle').innerHTML = `
             LAPORAN TAHUNAN KOKURIKULUM (${kelabPilih.toUpperCase()}) — RUMUSAN SIRI<br>
@@ -951,13 +892,16 @@
 
         let db = JSON.parse(localStorage.getItem('db_jadual')) || [];
         let html = "";
+        let siriCount = 1;
         db.forEach(item => {
-            let info = item.infoUBB;
-            let kUpper = kelabPilih.toUpperCase();
-            if(kUpper.includes('PAI') || kUpper.includes('PBI') || kUpper.includes('KPA')) info = item.infoUKP;
-            if(kUpper.includes('KC') || kUpper.includes('KBS') || kUpper.includes('KBB')) info = item.infoUSP;
+            let info = "-";
+            if(cat.includes('UBB')) info = item.infoUBB;
+            else if(cat.includes('UKP')) info = item.infoUKP;
+            else if(cat.includes('USP')) info = item.infoUSP;
 
-            html += `<tr><td style="text-align:center;"><b>${item.minggu}</b></td><td>${item.tarikh}</td><td>${info}</td></tr>`;
+            if(info && info !== "-" && info.trim() !== "") {
+                html += `<tr><td style="text-align:center;"><b>Siri ${siriCount++}</b></td><td style="text-align:center;"><b>${item.minggu}</b></td><td>${item.tarikh}</td><td>${info}</td></tr>`;
+            }
         });
         let el = document.getElementById('tabel_laporan_tahunan_view');
         if(el) el.innerHTML = html;
@@ -973,8 +917,9 @@
 
         let db = JSON.parse(localStorage.getItem('db_jadual')) || [];
         let html = "";
+        let siriCount = 1;
         db.forEach(item => {
-            html += `<tr><td style="text-align:center;"><b>${item.minggu}</b></td><td>${item.tarikh}</td><td style="text-align:center; color:#10b981; font-weight:bold;">✓ LENGKAP</td></tr>`;
+            html += `<tr><td style="text-align:center;"><b>Siri ${siriCount++}</b></td><td style="text-align:center;"><b>${item.minggu}</b></td><td>${item.tarikh}</td><td style="text-align:center; color:#10b981; font-weight:bold;">✓ LENGKAP</td></tr>`;
         });
         let el = document.getElementById('tabel_pemantauan_view');
         if(el) el.innerHTML = html;
