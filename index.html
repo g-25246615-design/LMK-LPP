@@ -29,7 +29,7 @@
         
         .form-group { margin-bottom: 15px; }
         label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 13px; color: #475569; }
-        input[type="text"], select, textarea, input[type="date"] { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; box-sizing: border-box; background: #fff; }
+        input[type="text"], select, textarea, input[type="date"], input[type="file"] { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; box-sizing: border-box; background: #fff; }
         
         table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 11px; }
         th, td { padding: 8px; border: 1px solid #cbd5e1; text-align: left; vertical-align: middle; }
@@ -49,6 +49,7 @@
         .notice-box { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 12px; font-size: 13px; color: #92400e; margin-bottom: 15px; border-radius: 4px; }
         
         .table-matrix-container { overflow-x: auto; }
+        .upload-box { background: #eff6ff; border: 1px dashed #3b82f6; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
     </style>
 </head>
 <body>
@@ -92,6 +93,14 @@
     <!-- 1. MASTER MURID -->
     <div id="modulMurid" class="card hidden">
         <h2>Tetapan Induk — Pangkalan Data Murid</h2>
+        
+        <!-- FUNGSI UPLOAD EXCEL MURID -->
+        <div class="upload-box">
+            <label>📂 Muat Naik Fail Excel (Bulk Import Murid):</label>
+            <input type="file" onchange="uploadExcel('murid', event)" accept=".xlsx, .xls">
+            <small style="color: #64748b; display: block; margin-top: 5px;">Format lajur Excel yang disokong: <b>nama, kelas, jantina, ubb, ukp, usp, rumahSukan</b></small>
+        </div>
+
         <form onsubmit="simpanMaster('murid', event)" style="background:#f8fafc; padding:20px; border-radius:8px; border:1px solid #e2e8f0; margin-bottom:20px;">
             <div class="form-group"><label>Nama Penuh:</label><input type="text" id="mNama" required></div>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
@@ -156,6 +165,14 @@
     <!-- 3. MASTER GURU -->
     <div id="modulGuru" class="card hidden">
         <h2>Tetapan Induk — Master Guru & Tugas Khas</h2>
+        
+        <!-- FUNGSI UPLOAD EXCEL GURU -->
+        <div class="upload-box">
+            <label>📂 Muat Naik Fail Excel (Bulk Import Guru):</label>
+            <input type="file" onchange="uploadExcel('guru', event)" accept=".xlsx, .xls">
+            <small style="color: #64748b; display: block; margin-top: 5px;">Format lajur Excel yang disokong: <b>nama, jawatanSekolah, kejurulatihan, ubb, jawatanUBB, ukp, jawatanUKP, usp, jawatanUSP, rumahSukan, jawatanRumah</b></small>
+        </div>
+
         <form onsubmit="simpanMaster('guru', event)" style="background:#f8fafc; padding:20px; border-radius:8px; border:1px solid #e2e8f0; margin-bottom:20px;">
             <div class="form-group"><label>Nama Guru:</label><input type="text" id="gNama" placeholder="Cth: Muhammad Adam Chong" required></div>
             
@@ -522,6 +539,26 @@
                 masa3: "1:00 PM - 1:40 PM", infoUSP: "-", guruUSP: "-" 
             }
         ]));
+    }
+
+    // FUNGSI UPLOAD EXCEL (BULK IMPORT)
+    function uploadExcel(jenis, event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, {type: 'array'});
+            const sheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[sheetName];
+            const json = XLSX.utils.sheet_to_json(worksheet);
+
+            localStorage.setItem('db_' + jenis, JSON.stringify(json));
+            alert("Berjaya muat naik " + json.length + " rekod ke dalam Master " + jenis + "!");
+            muatSemuaData();
+        };
+        reader.readAsArrayBuffer(file);
     }
 
     // ENJIN SSOT: AGIHAN GURU AUTOMATIK BERDASARKAN BLOK PERJUMPAAN
