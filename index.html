@@ -1395,7 +1395,7 @@ async function handleLogin(event){
       body:JSON.stringify({action:'loginUser',userId:id,password})
     });
     const result=await response.json();
-    if(!response.ok || result.status!=='ok' || !result.user){
+    if(!response.ok || result.status!=='success' || !result.user){
       throw new Error(result.message||'ID pengguna atau kata laluan tidak tepat.');
     }
 
