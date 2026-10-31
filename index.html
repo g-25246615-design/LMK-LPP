@@ -58,10 +58,51 @@ td.actions button{padding:5px 8px!important;font-size:11px!important;white-space
 .cal-day:hover{box-shadow:0 0 0 2px rgba(15,23,42,.12) inset}
 .cal-day.has-activity{font-weight:800}
 .cal-day i{font-style:normal;font-size:8px;margin-left:2px}
+
+.login-screen{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(135deg,#173b57,#2e6d93)}
+.login-card{width:min(420px,100%);background:#fff;border-radius:18px;padding:30px;box-shadow:0 18px 55px #081d2b55}
+.login-brand{display:flex;align-items:center;gap:12px;margin-bottom:24px}
+.login-brand-mark{width:48px;height:48px;border-radius:13px;background:var(--navy);color:#fff;display:grid;place-items:center;font-weight:900;font-size:18px}
+.login-card h1{font-size:21px;margin:0 0 5px;color:var(--navy)}
+.login-card p{font-size:12px;color:var(--muted);margin:0}
+.login-field{margin:15px 0}
+.login-field label{display:block;font-size:12px;font-weight:800;margin-bottom:7px;color:#475467}
+.login-field input{width:100%;padding:12px;border:1px solid #ccd5dd;border-radius:9px;outline:none}
+.login-field input:focus{border-color:var(--blue);box-shadow:0 0 0 3px #2e6d9318}
+.login-submit{width:100%;padding:12px;border:0;border-radius:9px;background:var(--navy);color:#fff;font-weight:800;margin-top:8px}
+.login-submit:disabled{opacity:.65;cursor:wait}
+.login-error{display:none;margin-top:12px;padding:10px;border-radius:8px;background:#fff1f0;color:#b42318;font-size:12px}
+.logout-btn{border:1px solid var(--line);background:#fff;color:#475467;border-radius:8px;padding:7px 10px;font-size:11px}
+
 </style>
 </head>
 <body>
-<div class="app">
+
+<div class="login-screen" id="loginScreen">
+  <div class="login-card">
+    <div class="login-brand">
+      <div class="login-brand-mark">GK</div>
+      <div>
+        <h1>GERAK KERJA KOKURIKULUM</h1>
+        <p>Sistem Pengurusan SK Dogoton Banggi</p>
+      </div>
+    </div>
+    <form id="loginForm" autocomplete="on">
+      <div class="login-field">
+        <label for="loginUserId">ID GURU</label>
+        <input id="loginUserId" name="username" type="text" autocomplete="username" required placeholder="Masukkan ID pengguna">
+      </div>
+      <div class="login-field">
+        <label for="loginPassword">KATA LALUAN</label>
+        <input id="loginPassword" name="password" type="password" autocomplete="current-password" required placeholder="Masukkan kata laluan">
+      </div>
+      <button class="login-submit" id="loginSubmit" type="submit">LOG MASUK</button>
+      <div class="login-error" id="loginError" role="alert"></div>
+    </form>
+  </div>
+</div>
+
+<div class="app" id="mainApp" style="display:none">
 <aside class="sidebar" id="sidebar">
   <div class="logo"><div class="logoMark">GK</div><div><b>GERAK KERJA</b><span>KOKURIKULUM</span></div></div>
   <div class="sectionLabel">UTAMA</div>
@@ -90,7 +131,7 @@ td.actions button{padding:5px 8px!important;font-size:11px!important;white-space
 </aside>
 
 <div class="main">
-<header class="topbar"><div class="row"><button class="mobileMenu" onclick="toggleMenu()">☰</button><span class="crumb" id="crumb">Dashboard</span></div><div class="user"><span class="badge">ADMIN</span><div class="avatar">A</div></div></header>
+<header class="topbar"><div class="row"><button class="mobileMenu" onclick="toggleMenu()">☰</button><span class="crumb" id="crumb">Dashboard</span></div><div class="user"><span class="badge" id="currentRoleBadge">PENGGUNA</span><span id="currentUserName" style="font-size:12px;font-weight:700"></span><button class="logout-btn" type="button" onclick="logoutUser()">Log Keluar</button><div class="avatar" id="currentUserAvatar">U</div></div></header>
 <main class="content">
 
 <section id="dashboard" class="page active">
@@ -1262,17 +1303,127 @@ function renderOperasiTakwim(){
 }
 
 const titles={dashboard:'Dashboard',tetapan:'Master Tetapan',operasi:'Master Operasi',guru:'Master Guru',murid:'Master Murid',kelab:'Master Kelab',pemantauan:'Laporan Pemantauan',recycle:'Tong Kitar Semula',keahlian:'Keahlian & Jawatan',kehadiran:'Kehadiran',lmk:'LMK 1–12',rat:'RAT',pp:'Penglibatan & Pencapaian',jana:'Jana Dokumen'};
-document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.page))); setupMasterMurid(); setupMasterKelab(); setupMasterGuru(); loadMasterKelab(); loadMasterGuru(); loadMasterOperasi(); loadOperasiSetup(); loadOperasiCuti();
-document.querySelectorAll('.opTab').forEach(b=>b.addEventListener('click',()=>{
- const key=b.dataset.op;
- document.querySelectorAll('.opPanel').forEach(x=>x.style.display='none');
- const map={setup:'opSetup',calendar:'opCalendar',takwim:'opTakwim',meetings:'opMeetings',duties:'opDuties'};
- document.getElementById(map[key]).style.display='block';
- if(key==='takwim') renderOperasiTakwim(); if(key==='meetings') renderOperasiMeetings(); if(key==='duties') renderOperasiDuties();
- document.querySelectorAll('.opTab').forEach(x=>{x.classList.remove('primary','active');x.classList.add('secondary')});
- b.classList.remove('secondary');b.classList.add('primary','active');
-}));
-const pmUnitTab=document.getElementById('pmUnitTab'),pmAllTab=document.getElementById('pmAllTab'),pmUnitView=document.getElementById('pmUnitView'),pmAllView=document.getElementById('pmAllView'),pmUnitSelect=document.getElementById('pmUnitSelect');if(pmUnitTab&&pmAllTab){pmUnitTab.addEventListener('click',()=>{pmUnitView.style.display='block';pmAllView.style.display='none';pmUnitSelect.style.display='grid';pmUnitTab.className='primary';pmAllTab.className='secondary'});pmAllTab.addEventListener('click',()=>{pmUnitView.style.display='none';pmAllView.style.display='block';pmUnitSelect.style.display='none';pmAllTab.className='primary';pmUnitTab.className='secondary'});}function go(id){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.page===id));document.getElementById('crumb').textContent=titles[id];document.getElementById('sidebar').classList.remove('open');window.scrollTo(0,0);if(id==='murid')loadMasterMurid();if(id==='kelab')loadMasterKelab();if(id==='guru')loadMasterGuru();if(id==='keahlian')setupKeahlianJawatan();if(id==='kehadiran')setupKehadiran()}
+
+let appInitialized = false;
+let currentUser = null;
+
+function initializeApp(){
+  if(appInitialized) return;
+  appInitialized = true;
+
+  document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.page)));
+  setupMasterMurid();
+  setupMasterKelab();
+  setupMasterGuru();
+  loadMasterKelab();
+  loadMasterGuru();
+  loadMasterOperasi();
+  loadOperasiSetup();
+  loadOperasiCuti();
+
+  document.querySelectorAll('.opTab').forEach(b=>b.addEventListener('click',()=>{
+    const key=b.dataset.op;
+    document.querySelectorAll('.opPanel').forEach(x=>x.style.display='none');
+    const map={setup:'opSetup',calendar:'opCalendar',takwim:'opTakwim',meetings:'opMeetings',duties:'opDuties'};
+    document.getElementById(map[key]).style.display='block';
+    if(key==='takwim') renderOperasiTakwim();
+    if(key==='meetings') renderOperasiMeetings();
+    if(key==='duties') renderOperasiDuties();
+    document.querySelectorAll('.opTab').forEach(x=>{x.classList.remove('primary','active');x.classList.add('secondary')});
+    b.classList.remove('secondary');b.classList.add('primary','active');
+  }));
+
+  const pmUnitTab=document.getElementById('pmUnitTab'),pmAllTab=document.getElementById('pmAllTab'),pmUnitView=document.getElementById('pmUnitView'),pmAllView=document.getElementById('pmAllView'),pmUnitSelect=document.getElementById('pmUnitSelect');
+  if(pmUnitTab&&pmAllTab){
+    pmUnitTab.addEventListener('click',()=>{pmUnitView.style.display='block';pmAllView.style.display='none';pmUnitSelect.style.display='grid';pmUnitTab.className='primary';pmAllTab.className='secondary'});
+    pmAllTab.addEventListener('click',()=>{pmUnitView.style.display='none';pmAllView.style.display='block';pmUnitSelect.style.display='none';pmAllTab.className='primary';pmUnitTab.className='secondary'});
+  }
+}
+
+function go(id){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.page===id));
+  document.getElementById('crumb').textContent=titles[id];
+  document.getElementById('sidebar').classList.remove('open');
+  window.scrollTo(0,0);
+  if(id==='murid')loadMasterMurid();
+  if(id==='kelab')loadMasterKelab();
+  if(id==='guru')loadMasterGuru();
+  if(id==='keahlian')setupKeahlianJawatan();
+  if(id==='kehadiran')setupKehadiran();
+}
+
+function applyUserRole(user){
+  const isAdmin = String(user.peranan||'').trim().toUpperCase()==='ADMIN';
+  const adminLabel = document.querySelectorAll('.sectionLabel');
+  const adminNav = document.querySelectorAll('.sidebar .nav');
+  // Navigation is arranged as: Utama, Guru Penasihat, Admin.
+  if(adminLabel[2]) adminLabel[2].style.display = isAdmin ? '' : 'none';
+  if(adminNav[2]) adminNav[2].style.display = isAdmin ? '' : 'none';
+
+  document.getElementById('currentRoleBadge').textContent = isAdmin ? 'ADMIN' : 'GURU';
+  document.getElementById('currentUserName').textContent = user.nama || user.id || '';
+  document.getElementById('currentUserAvatar').textContent = String(user.nama||user.id||'U').trim().charAt(0).toUpperCase();
+
+  // Hide known ADMIN-only action buttons from the GURU interface.
+  if(!isAdmin){
+    document.querySelectorAll('#tetapan .title button, #operasi .title button, #guru .title button, #murid .title button, #kelab .title button').forEach(el=>el.style.display='none');
+    document.querySelectorAll('#tetapan .primary, #operasi .primary, #guru .primary, #murid .primary, #kelab .primary, #recycle .primary').forEach(el=>el.style.display='none');
+  }
+}
+
+async function handleLogin(event){
+  event.preventDefault();
+  const id = document.getElementById('loginUserId').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const button = document.getElementById('loginSubmit');
+  const errorBox = document.getElementById('loginError');
+  errorBox.style.display='none';
+  if(!id || !password){
+    errorBox.textContent='Sila masukkan ID pengguna dan kata laluan.';
+    errorBox.style.display='block';
+    return;
+  }
+
+  button.disabled=true;
+  button.textContent='SEDANG MENYEMAK...';
+  try{
+    const response=await fetch(WEB_APP_URL,{
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify({action:'loginUser',userId:id,password})
+    });
+    const result=await response.json();
+    if(!response.ok || result.status!=='ok' || !result.user){
+      throw new Error(result.message||'ID pengguna atau kata laluan tidak tepat.');
+    }
+
+    currentUser=result.user;
+    applyUserRole(currentUser);
+    document.getElementById('loginScreen').style.display='none';
+    document.getElementById('mainApp').style.display='flex';
+    initializeApp();
+  }catch(err){
+    errorBox.textContent=err.message||'Tidak dapat menghubungi sistem. Sila cuba lagi.';
+    errorBox.style.display='block';
+  }finally{
+    button.disabled=false;
+    button.textContent='LOG MASUK';
+  }
+}
+
+function logoutUser(){
+  currentUser=null;
+  appInitialized=false;
+  document.getElementById('mainApp').style.display='none';
+  document.getElementById('loginPassword').value='';
+  document.getElementById('loginError').style.display='none';
+  document.getElementById('loginScreen').style.display='flex';
+}
+
+document.getElementById('loginForm').addEventListener('submit',handleLogin);
+
 
 let khReady = false;
 
