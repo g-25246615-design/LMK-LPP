@@ -650,10 +650,12 @@ async function loadOperasiSetup(){
     if(result.status==='error') throw new Error(result.message||'Gagal membaca Setup Master Operasi.');
     masterOperasiSetup=Object.assign(masterOperasiSetup,result.data||{});
     renderOperasiSetup();
+    await loadOperasiCuti();
     renderOperasiCalendar();
   }catch(err){
     console.error(err);
     renderOperasiSetup();
+    await loadOperasiCuti();
   }
 }
 
@@ -669,8 +671,8 @@ function renderOperasiSetup(){
   if(yc)yc.textContent=year||'—'; if(sc)sc.textContent=start?formatDisplayDate(start):'—';
 }
 function formatDisplayDate(v){
-  const m=String(v||'').match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  return m ? `${m[3]}/${m[2]}/${m[1]}` : String(v||'—');
+  const d=opDateOnly(v);
+  return d ? `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}` : String(v||'—');
 }
 
 async function saveOperasiSetup(){
@@ -700,7 +702,8 @@ async function loadOperasiCuti(){
   if(!body) return;
   body.innerHTML='<tr><td colspan="5" class="empty">Membaca jadual cuti...</td></tr>';
   try{
-    const response=await fetch(WEB_APP_URL+'?action=operasiCuti',{method:'GET',cache:'no-store'});
+    const activeYear=String(masterOperasiSetup?.['TAHUN']||'').trim();
+    const response=await fetch(WEB_APP_URL+'?action=operasiCuti&year='+encodeURIComponent(activeYear),{method:'GET',cache:'no-store'});
     const result=await response.json();
     if(result.status==='error') throw new Error(result.message||'Gagal membaca Jadual Cuti.');
     const headers=(result.headers||[]).map(x=>String(x??'').trim().toUpperCase());
@@ -712,6 +715,7 @@ async function loadOperasiCuti(){
       body.innerHTML='<tr><td colspan="5" class="empty">Belum ada cuti didaftarkan.</td></tr>';
       const card=document.getElementById('opSetupHolidayCard');
       if(card) card.textContent='0';
+      renderOperasiCalendar();
       return;
     }
     body.innerHTML=operasiCutiCache.map((r,i)=>`
@@ -727,6 +731,7 @@ async function loadOperasiCuti(){
       </tr>`).join('');
     const card=document.getElementById('opSetupHolidayCard');
     if(card) card.textContent=String(operasiCutiCache.length);
+    renderOperasiCalendar();
   }catch(err){
     body.innerHTML='<tr><td colspan="5" class="empty">Gagal membaca Jadual Cuti: '+escapeHtml(err.message||String(err))+'</td></tr>';
   }
@@ -773,7 +778,7 @@ async function updateOperasiCuti(index){
   if(!old) return;
   const record={
     'ID CUTI':String(old['ID CUTI']||'').trim(),
-    'TAHUN':String(masterOperasiSetup?.['TAHUN']||old['TAHUN']||'').trim(),
+    'TAHUN':String(old['TAHUN']||masterOperasiSetup?.['TAHUN']||'').trim(),
     'NAMA CUTI':String(document.getElementById('modalHolidayName')?.value||'').trim(),
     'TARIKH MULA':String(document.getElementById('modalHolidayStart')?.value||'').trim(),
     'TARIKH TAMAT':String(document.getElementById('modalHolidayEnd')?.value||'').trim(),
@@ -1293,7 +1298,6 @@ function initializeApp(){
   loadMasterGuru();
   loadMasterOperasi();
   loadOperasiSetup();
-  loadOperasiCuti();
 
   document.querySelectorAll('.opTab').forEach(b=>b.addEventListener('click',()=>{
     const key=b.dataset.op;
@@ -2960,7 +2964,7 @@ if(type==='lmk'){openLMKForm(arguments[1]||{});return;}
 let content='';
 if(type==='rollover')content=`<div class="modalHead"><div><h2 style="margin:0">Sediakan Tahun Baharu</h2><p class="muted">Proses terkawal oleh Admin.</p></div><button class="close" onclick="closeModal()">×</button></div><div class="card" style="background:#f8fafc"><b>2026 → 2027</b><p class="muted">Tahun 4 → 5 • Tahun 5 → 6 • Tahun 6 tidak dibawa</p><p class="muted">Jawatan murid akan menjadi <b>cadangan</b> sahaja. Guru masih boleh mengubahnya.</p></div><div class="actions"><button class="primary" onclick="closeModal();toast('Langkah rollover sedia untuk disambungkan ke Google Sheets.')">Teruskan</button><button class="secondary" onclick="closeModal()">Batal</button></div>`;
 if(type==='opSetup'){const s=masterOperasiSetup||{};content=`<div class="modalHead"><div><h2 style="margin:0">Setup Master Operasi</h2><p class="muted">Sumber kepada Kalendar setahun.</p></div><button class="close" onclick="closeModal()">×</button></div><div class="form"><div class="field"><label>TAHUN</label><input id="modalOpSetupYear" type="number" value="${escapeHtml(s['TAHUN']||'')}"></div><div class="field"><label>TARIKH MULA SEKOLAH</label><input id="modalOpSetupStart" type="date" value="${escapeHtml(s['TARIKH MULA SEKOLAH']||'')}"></div><div class="field"><label>TARIKH AKHIR SEKOLAH</label><input id="modalOpSetupEnd" type="date" value="${escapeHtml(s['TARIKH AKHIR SEKOLAH']||'')}"></div><div class="field"><label>STATUS</label><select id="modalOpSetupStatus"><option value="AKTIF" ${(s['STATUS']||'AKTIF')==='AKTIF'?'selected':''}>AKTIF</option><option value="DRAF" ${(s['STATUS']||'')==='DRAF'?'selected':''}>DRAF</option></select></div></div><div class="actions" style="margin-top:16px"><button class="secondary" onclick="closeModal()">Batal</button><button class="primary" onclick="saveOperasiSetup()">Simpan Setup</button></div>`;}
-if(type==='holidayEdit'){const r=arguments[1]||{};const idx=arguments[2]??-1;content=`<div class="modalHead"><div><h2 style="margin:0">Edit Cuti</h2><p class="muted">Kemas kini rekod cuti yang dipilih.</p></div><button class="close" onclick="closeModal()">×</button></div><div class="form"><div class="field full"><label>NAMA CUTI</label><input id="modalHolidayName" value="${escapeHtml(r['NAMA CUTI']||'')}"></div><div class="field"><label>TARIKH MULA</label><input id="modalHolidayStart" type="date" value="${escapeHtml(r['TARIKH MULA']||'')}"></div><div class="field"><label>TARIKH TAMAT</label><input id="modalHolidayEnd" type="date" value="${escapeHtml(r['TARIKH TAMAT']||'')}"></div></div><div class="actions" style="margin-top:16px"><button class="secondary" onclick="closeModal()">Batal</button><button class="primary" onclick="updateOperasiCuti(${idx})">Simpan Perubahan</button></div>`;}
+if(type==='holidayEdit'){const r=arguments[1]||{};const idx=arguments[2]??-1;content=`<div class="modalHead"><div><h2 style="margin:0">Edit Cuti</h2><p class="muted">Kemas kini rekod cuti yang dipilih.</p></div><button class="close" onclick="closeModal()">×</button></div><div class="form"><div class="field full"><label>NAMA CUTI</label><input id="modalHolidayName" value="${escapeHtml(r['NAMA CUTI']||'')}"></div><div class="field"><label>TARIKH MULA</label><input id="modalHolidayStart" type="date" value="${escapeHtml(opDateInputValue(r['TARIKH MULA']))}"></div><div class="field"><label>TARIKH TAMAT</label><input id="modalHolidayEnd" type="date" value="${escapeHtml(opDateInputValue(r['TARIKH TAMAT']))}"></div></div><div class="actions" style="margin-top:16px"><button class="secondary" onclick="closeModal()">Batal</button><button class="primary" onclick="updateOperasiCuti(${idx})">Simpan Perubahan</button></div>`;}
 if(type==='holiday')content=`<div class="modalHead"><div><h2 style="margin:0">Tambah Cuti</h2><p class="muted">Cuti akan digunakan oleh Kalendar untuk menentukan tarikh yang tidak beroperasi.</p></div><button class="close" onclick="closeModal()">×</button></div><div class="form"><div class="field full"><label>NAMA CUTI</label><input id="modalHolidayName" placeholder="Contoh: Cuti Pertengahan Penggal"></div><div class="field"><label>TARIKH MULA</label><input id="modalHolidayStart" type="date"></div><div class="field"><label>TARIKH TAMAT</label><input id="modalHolidayEnd" type="date"></div></div><div class="actions" style="margin-top:16px"><button class="secondary" onclick="closeModal()">Batal</button><button class="primary" onclick="saveOperasiCuti()">Simpan Cuti</button></div>`;
 if(type==='calendar'){
  const date=arguments[1]||''; const info=arguments[2]||{};
@@ -3679,11 +3683,15 @@ function opDateOnly(v){
 function opDateKey(d){
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
+function opDateInputValue(v){
+  const d=opDateOnly(v);
+  return d?opDateKey(d):'';
+}
 function opHolidayForDate(d){
   const key=opDateKey(d);
   return (operasiCutiCache||[]).find(x=>{
     const a=opDateOnly(x['TARIKH MULA']), b=opDateOnly(x['TARIKH TAMAT'])||a;
-    return a && key>=opDateKey(a) && key<=opDateKey(b);
+    return a && Number(x['TAHUN'])===Number(masterOperasiSetup?.['TAHUN']) && String(x['STATUS']||'AKTIF').toUpperCase()==='AKTIF' && key>=opDateKey(a) && key<=opDateKey(b);
   });
 }
 function renderOperasiCalendar(){
