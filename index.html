@@ -580,59 +580,33 @@ td.actions button{padding:5px 8px!important;font-size:11px!important;white-space
 
 <section id="lmk" class="page">
 <div class="title">
-  <div><h1>LMK 1–12</h1><p>Lengkapkan laporan gerak kerja. Maklumat jadual datang daripada Master Operasi.</p></div>
-  <div class="actions"><span class="badge green">GURU PENASIHAT</span><button class="primary" onclick="openModal('lmk')">＋ Isi LMK</button></div>
+  <div><h1>LMK 1–12</h1><p>Lengkapkan laporan gerak kerja berdasarkan jadual Master Operasi dan rekod tahunan.</p></div>
+  <div class="actions"><span class="badge green">GURU PENASIHAT</span></div>
 </div>
-
 <div class="card">
-  <div class="toolbar">
-    <div><h3 style="margin:0">Pilih Kelab / Unit</h3><small class="muted">Pilih unit dahulu. Senarai perjumpaan akan mengikut jadual unit tersebut.</small></div>
-    <select id="lmkUnitSelect" style="min-width:280px">
-      <option>Kelab Catur</option>
-      <option>Kelab Bola Sepak</option>
-      <option>Kelab Bola Baling</option>
-      <option>Pengakap</option>
-      <option>TKRS</option>
-      <option>Persatuan Bahasa Inggeris</option>
-      <option>Persatuan Agama Islam</option>
-      <option>Kelab Pencinta Alam</option>
-    </select>
+  <div class="toolbar" style="gap:16px;flex-wrap:wrap">
+    <div><h3 style="margin:0">Pilih Tahun dan Kelab / Unit</h3><small class="muted">Jadual perjumpaan dipaparkan mengikut tahun dan unit yang dipilih.</small></div>
+    <div class="actions" style="flex-wrap:wrap">
+      <select id="lmkYearSelect" style="min-width:110px" onchange="loadLMKModule()"><option value="2026">2026</option></select>
+      <select id="lmkUnitSelect" style="min-width:260px" onchange="renderLMKModule()"><option value="">Memuatkan unit...</option></select>
+    </div>
   </div>
 </div>
-
-<div class="grid4" style="margin-top:16px">
-  <div class="card metric"><div class="label">LMK Lengkap</div><div class="value">— / 12</div><div class="foot">Unit dipilih</div></div>
-  <div class="card metric"><div class="label">Belum Diisi</div><div class="value">—</div><div class="foot">Perlu tindakan</div></div>
-  <div class="card metric"><div class="label">Evidens</div><div class="value">—</div><div class="foot">Gambar / dokumen</div></div>
-  <div class="card metric"><div class="label">Kehadiran</div><div class="value">—</div><div class="foot">Daripada modul kehadiran</div></div>
+<div class="grid4" style="margin-top:16px" id="lmkMetrics">
+  <div class="card metric"><div class="label">LMK Lengkap</div><div class="value">0 / 12</div><div class="foot">Unit dipilih</div></div>
+  <div class="card metric"><div class="label">Belum Lengkap</div><div class="value">12</div><div class="foot">Perlu tindakan</div></div>
+  <div class="card metric"><div class="label">Evidens</div><div class="value">0</div><div class="foot">Pautan evidens direkodkan</div></div>
+  <div class="card metric"><div class="label">Kemajuan</div><div class="value">0%</div><div class="foot">Berdasarkan rekod Data LMK</div></div>
 </div>
-
 <div class="card" style="margin-top:16px">
-  <div class="toolbar">
-    <div><h3 style="margin:0">Perjumpaan Kelab Catur</h3><small class="muted">Tarikh, minggu dan guru bertugas ditarik automatik daripada Master Operasi.</small></div>
-    <span class="badge">12 PERJUMPAAN</span>
-  </div>
-  <div class="tableWrap">
-  <table>
-    <thead><tr><th>BIL</th><th>TARIKH</th><th>MINGGU</th><th>GURU BERTUGAS</th><th>AKTIVITI RAT</th><th>STATUS LMK</th><th>TINDAKAN</th></tr></thead>
-    <tbody>
-      <tr><td>1</td><td>Auto</td><td>Auto</td><td>Auto</td><td>Daripada RAT / —</td><td><span class="badge amber">BELUM DIISI</span></td><td><button class="secondary" onclick="openModal('lmk')">Isi LMK</button></td></tr>
-      <tr><td>2</td><td>Auto</td><td>Auto</td><td>Auto</td><td>Daripada RAT / —</td><td><span class="badge green">LENGKAP</span></td><td><button class="secondary" onclick="openModal('lmk')">Lihat / Edit</button></td></tr>
-      <tr><td>3</td><td>Auto</td><td>Auto</td><td>Auto</td><td>Daripada RAT / —</td><td><span class="badge amber">BELUM DIISI</span></td><td><button class="secondary" onclick="openModal('lmk')">Isi LMK</button></td></tr>
-      <tr><td colspan="7" class="empty">Bil 4–12 menggunakan struktur yang sama. Data sebenar akan datang daripada Master Operasi dan Google Sheet kelab.</td></tr>
-    </tbody>
-  </table>
-  </div>
+  <div class="toolbar"><div><h3 id="lmkMeetingTitle" style="margin:0">Senarai Perjumpaan</h3><small class="muted">Tarikh, minggu, guru bertugas dan aktiviti ditarik terus daripada Master Operasi.</small></div><span class="badge" id="lmkMeetingCount">0 PERJUMPAAN</span></div>
+  <div class="tableWrap"><table id="lmkMeetingTable"><thead><tr><th>BIL</th><th>TARIKH</th><th>MINGGU</th><th>GURU BERTUGAS</th><th>AKTIVITI RAT</th><th>STATUS LMK</th><th>TINDAKAN</th></tr></thead><tbody><tr><td colspan="7" class="empty">Memuatkan jadual...</td></tr></tbody></table></div>
 </div>
-
-<div class="card">
-  <div class="toolbar"><h3 style="margin:0">Struktur Borang LMK</h3><span class="badge">AUTO + INPUT GURU</span></div>
-  <div class="grid3">
-    <div><b>① Maklumat Perjumpaan</b><p class="muted" style="font-size:12px">Bil, tarikh, minggu, unit dan guru bertugas dijana daripada data sistem.</p></div>
-    <div><b>② Gerak Kerja</b><p class="muted" style="font-size:12px">Guru isi aktiviti sebenar, objektif, pelaksanaan dan catatan/refleksi.</p></div>
-    <div><b>③ Evidens</b><p class="muted" style="font-size:12px">Muat naik gambar/dokumen dan lengkapkan laporan.</p></div>
-  </div>
+<div class="card" style="margin-top:16px">
+  <div class="toolbar"><div><h3 style="margin:0">Pemantauan LMK Mengikut Unit</h3><small class="muted">Senarai unit dan kemajuan pengisian bagi tahun yang dipilih.</small></div><span class="badge" id="lmkYearLabel">2026</span></div>
+  <div class="tableWrap"><table id="lmkAnnualTable"><thead><tr><th>BIL</th><th>KOD UNIT</th><th>KELAB / UNIT</th><th>KOMPONEN</th><th>LMK LENGKAP</th><th>DALAM DRAF</th><th>BELUM DIISI</th><th>KEMAJUAN</th></tr></thead><tbody><tr><td colspan="8" class="empty">Memuatkan pemantauan...</td></tr></tbody></table></div>
 </div>
+<div class="card" style="margin-top:16px"><h3>Struktur Borang LMK</h3><div class="grid3"><div><b>① Maklumat Perjumpaan</b><p class="muted" style="font-size:12px">Diambil daripada Master Operasi.</p></div><div><b>② Gerak Kerja</b><p class="muted" style="font-size:12px">Aktiviti sebenar, objektif, pelaksanaan dan refleksi.</p></div><div><b>③ Evidens</b><p class="muted" style="font-size:12px">Masukkan pautan fail evidens Google Drive.</p></div></div></div>
 </section>
 
 <section id="pp" class="page"><div class="title"><div><h1>Penglibatan & Pencapaian</h1><p>Satu aktiviti boleh mempunyai ramai peserta. BIDANG = unit yang mendaftarkan rekod.</p></div><button class="primary" onclick="openModal('pp')">＋ Tambah P&P</button></div><div class="card"><h3>Workflow</h3><div class="grid3"><div><span class="badge">01</span><p><b>Pilih BIDANG</b><br><small class="muted">Kelab yang mendaftarkan rekod.</small></p></div><div><span class="badge">02</span><p><b>Isi Pertandingan</b><br><small class="muted">Maklumat aktiviti diisi sekali.</small></p></div><div><span class="badge">03</span><p><b>Tambah Peserta</b><br><small class="muted">Murid tidak ditapis mengikut kelab.</small></p></div></div></div><div class="card"><div class="toolbar"><h3>Raw P&P</h3><span class="badge">18 KOLUM LOOKER STUDIO</span></div><div class="empty">Rekod akan ditulis mengikut struktur data P&P sedia ada.</div></div></section>
@@ -1352,6 +1326,7 @@ function go(id){
   if(id==='guru')loadMasterGuru();
   if(id==='keahlian')setupKeahlianJawatan();
   if(id==='kehadiran')setupKehadiran();
+  if(id==='lmk')loadLMKModule();
 }
 
 function applyUserRole(user){
@@ -2867,7 +2842,78 @@ async function saveMasterGuru(){
   }
 }
 
+// ==========================================
+// MODUL LMK TAHUNAN - MASTER OPERASI + DATA LMK
+// ==========================================
+let lmkUnitsCache=[];
+let lmkMeetingsCache=[];
+let lmkSavedCache=[];
+let lmkLoadedYear='';
+const lmkTeacherFields={UBB1:'PENGAKAP',UBB2:'TKRS',UKP1:'PAI',UKP2:'PBI',UKP3:'KPA',USP1:'KC',USP2:'KBS',USP3:'KBB'};
+function lmkCellDate(v){
+  if(!v)return '—';
+  const d=new Date(v);
+  if(!isNaN(d.getTime()))return d.toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric'});
+  const m=String(v).match(/^(\d{4})-(\d{2})-(\d{2})/);return m?`${m[3]}/${m[2]}/${m[1]}`:String(v);
+}
+async function loadLMKModule(){
+  const yearSel=document.getElementById('lmkYearSelect');if(!yearSel)return;
+  const selected=String(yearSel.value||masterOperasiSetup?.['TAHUN']||'2026');
+  const body=document.querySelector('#lmkMeetingTable tbody');if(body)body.innerHTML='<tr><td colspan="7" class="empty">Memuatkan data...</td></tr>';
+  try{
+    const [opRes,clubRes,lmkRes]=await Promise.all([
+      fetch(WEB_APP_URL+'?action=masterOperasi',{cache:'no-store'}).then(r=>r.json()),
+      fetch(WEB_APP_URL+'?action=masterKelab',{cache:'no-store'}).then(r=>r.json()),
+      fetch(WEB_APP_URL+'?action=lmkData&tahun='+encodeURIComponent(selected),{cache:'no-store'}).then(r=>r.json())
+    ]);
+    [opRes,clubRes,lmkRes].forEach(x=>{if(x.status==='error')throw new Error(x.message||'Gagal membaca data LMK.');});
+    const toObjects=(res)=>(res.data||[]).map(row=>{const o={};(res.headers||[]).forEach((h,i)=>o[String(h||'').trim().toUpperCase()]=row[i]??'');return o;});
+    const operations=toObjects(opRes);lmkUnitsCache=toObjects(clubRes).filter(u=>String(u.STATUS||'AKTIF').trim().toUpperCase()==='AKTIF');lmkSavedCache=toObjects(lmkRes);
+    const years=[...new Set([...operations.map(r=>String(r.TAHUN||'').trim()),...lmkUnitsCache.map(r=>String(r.TAHUN||'').trim()),String(masterOperasiSetup?.TAHUN||'')].filter(x=>/^\d{4}$/.test(x)))].sort();
+    yearSel.innerHTML=years.map(y=>`<option value="${escapeHtml(y)}" ${y===selected?'selected':''}>${escapeHtml(y)}</option>`).join('')||`<option value="${selected}">${selected}</option>`;
+    const year=String(yearSel.value||selected);lmkLoadedYear=year;
+    const units=lmkUnitsCache.filter(u=>!String(u.TAHUN||'').trim()||String(u.TAHUN).trim()===year);
+    const unitSel=document.getElementById('lmkUnitSelect');const prev=unitSel.value;
+    unitSel.innerHTML=units.map(u=>`<option value="${escapeHtml(u['KOD UNIT'])}">${escapeHtml(u['NAMA UNIT'])}</option>`).join('')||'<option value="">Tiada unit aktif bagi tahun ini</option>';
+    if(units.some(u=>String(u['KOD UNIT'])===prev))unitSel.value=prev;
+    lmkMeetingsCache=operations.filter(r=>String(r.TAHUN||year).trim()===year);
+    renderLMKModule();
+  }catch(err){if(body)body.innerHTML=`<tr><td colspan="7" class="empty">${escapeHtml(err.message||String(err))}</td></tr>`;toast(err.message||'Gagal memuatkan LMK.');}
+}
+function renderLMKModule(){
+  const year=String(document.getElementById('lmkYearSelect')?.value||'');const code=String(document.getElementById('lmkUnitSelect')?.value||'');
+  const unit=lmkUnitsCache.find(u=>String(u['KOD UNIT'])===code);const comp=String(unit?.KOMPONEN||'').trim().toUpperCase();
+  const teacherField=lmkTeacherFields[code]||'';
+  const meetings=lmkMeetingsCache.filter(r=>String(r[comp]||'').trim()!=='' ).sort((a,b)=>String(a.TARIKH||'').localeCompare(String(b.TARIKH||'')));
+  const saved=lmkSavedCache.filter(r=>String(r['KOD UNIT'])===code);
+  const savedByBil=new Map(saved.map(r=>[String(r['BIL PERJUMPAAN']),r]));
+  const complete=saved.filter(r=>String(r['STATUS LMK']).toUpperCase()==='LENGKAP').length;
+  const drafts=saved.filter(r=>String(r['STATUS LMK']).toUpperCase()==='DRAF').length;
+  const evidence=saved.filter(r=>String(r.EVIDENS||'').trim()).length;
+  const total=meetings.length;const pending=Math.max(0,total-complete-drafts);
+  const metrics=document.querySelectorAll('#lmkMetrics .metric .value');if(metrics.length>=4){metrics[0].textContent=`${complete} / ${total}`;metrics[1].textContent=String(pending);metrics[2].textContent=String(evidence);metrics[3].textContent=(total?Math.round(complete/total*100):0)+'%';}
+  document.getElementById('lmkMeetingTitle').textContent='Perjumpaan '+String(unit?.['NAMA UNIT']||'');document.getElementById('lmkMeetingCount').textContent=total+' PERJUMPAAN';document.getElementById('lmkYearLabel').textContent=year;
+  const tbody=document.querySelector('#lmkMeetingTable tbody');
+  if(tbody){tbody.innerHTML=meetings.length?meetings.map((r,i)=>{const bil=String(r.BIL||i+1);const rec=savedByBil.get(bil);const st=String(rec?.['STATUS LMK']||'BELUM DIISI').toUpperCase();const badge=st==='LENGKAP'?'green':st==='DRAF'?'amber':'amber';const teacher=String(r[teacherField]||'').trim()||'—';const activity=String(r[comp]||'').trim()||'—';return `<tr><td>${escapeHtml(bil)}</td><td>${escapeHtml(lmkCellDate(r.TARIKH))}</td><td>${escapeHtml(r.MINGGU||'—')}</td><td>${escapeHtml(teacher)}</td><td>${escapeHtml(activity)}</td><td><span class="badge ${badge}">${escapeHtml(st)}</span></td><td><button class="secondary" onclick="openLMKFormEncoded('${encodeURIComponent(JSON.stringify({tahun:year,kodUnit:code,namaUnit:unit?.["NAMA UNIT"]||"",komponen:comp,bilPerjumpaan:bil,tarikh:r.TARIKH,minggu:r.MINGGU,guruBertugas:teacher,aktivitiRat:activity,disediakanOleh:currentUser?.nama||"",saved:rec||null}))}')">${rec?'Lihat / Edit':'Isi LMK'}</button></td></tr>`;}).join(''):'<tr><td colspan="7" class="empty">Tiada jadual perjumpaan untuk unit ini dalam Master Operasi bagi tahun dipilih.</td></tr>';}
+  const annual=document.querySelector('#lmkAnnualTable tbody');if(annual){annual.innerHTML=lmkUnitsCache.filter(u=>!String(u.TAHUN||'').trim()||String(u.TAHUN).trim()===year).map((u,i)=>{const rows=lmkSavedCache.filter(r=>String(r['KOD UNIT'])===String(u['KOD UNIT']));const done=rows.filter(r=>String(r['STATUS LMK']).toUpperCase()==='LENGKAP').length;const draft=rows.filter(r=>String(r['STATUS LMK']).toUpperCase()==='DRAF').length;const planned=lmkMeetingsCache.filter(r=>String(r[String(u.KOMPONEN||'').toUpperCase()]||'').trim()!=='').length;const pct=planned?Math.round(done/planned*100):0;return `<tr><td>${i+1}</td><td>${escapeHtml(u['KOD UNIT'])}</td><td><b>${escapeHtml(u['NAMA UNIT'])}</b></td><td>${escapeHtml(u.KOMPONEN)}</td><td>${done}</td><td>${draft}</td><td>${Math.max(0,planned-done-draft)}</td><td><b>${pct}%</b></td></tr>`;}).join('')||'<tr><td colspan="8" class="empty">Tiada unit aktif untuk tahun ini.</td></tr>';}
+}
+function openLMKFormEncoded(encoded){try{openLMKForm(JSON.parse(decodeURIComponent(encoded)));}catch(e){toast('Maklumat perjumpaan tidak dapat dibuka.');}}
+function openLMKForm(ctx){
+  const r=ctx.saved||{};const val=(k,f='')=>escapeHtml(r[k]??f);
+  const content=`<div class="modalHead"><div><h2 style="margin:0">Borang LMK — Bil ${escapeHtml(ctx.bilPerjumpaan||'')}</h2><p class="muted">${escapeHtml(ctx.namaUnit||'')} • ${escapeHtml(ctx.tahun||'')}</p></div><button class="close" onclick="closeModal()">×</button></div>
+  <div class="card" style="background:#f8fafc;margin-bottom:14px"><div class="grid3"><div><small class="muted">TARIKH</small><br><b>${escapeHtml(lmkCellDate(ctx.tarikh))}</b></div><div><small class="muted">MINGGU</small><br><b>${escapeHtml(ctx.minggu||'—')}</b></div><div><small class="muted">GURU BERTUGAS</small><br><b>${escapeHtml(ctx.guruBertugas||'—')}</b></div></div><div style="margin-top:8px"><small class="muted">AKTIVITI RAT</small><br><b>${escapeHtml(ctx.aktivitiRat||'—')}</b></div></div>
+  <div class="form"><div class="field full"><label>AKTIVITI SEBENAR</label><textarea id="lmkActual">${val('AKTIVITI SEBENAR')}</textarea></div><div class="field"><label>OBJEKTIF</label><textarea id="lmkObjective">${val('OBJEKTIF')}</textarea></div><div class="field"><label>PELAKSANAAN</label><textarea id="lmkImplementation">${val('PELAKSANAAN')}</textarea></div><div class="field full"><label>CATATAN / REFLEKSI</label><textarea id="lmkNotes">${val('CATATAN / REFLEKSI')}</textarea></div><div class="field full"><label>PAUTAN EVIDENS GOOGLE DRIVE</label><input id="lmkEvidence" value="${val('EVIDENS')}" placeholder="Tampal pautan fail / folder evidens"></div></div>
+  <div class="actions" style="margin-top:16px"><button class="secondary" onclick="closeModal()">Batal</button><button class="primary" onclick="saveLMKEncoded('${encodeURIComponent(JSON.stringify(ctx))}')">Simpan LMK</button></div>`;
+  document.getElementById('modal').innerHTML=content;document.getElementById('modalBack').style.display='flex';
+}
+async function saveLMKEncoded(encoded){try{return await saveLMK(JSON.parse(decodeURIComponent(encoded)));}catch(e){toast('Maklumat LMK tidak sah.');}}
+async function saveLMK(ctx){
+  const record={tahun:ctx.tahun,kodUnit:ctx.kodUnit,namaUnit:ctx.namaUnit,bilPerjumpaan:ctx.bilPerjumpaan,tarikh:ctx.tarikh,minggu:ctx.minggu,guruBertugas:ctx.guruBertugas,disediakanOleh:ctx.disediakanOleh,aktivitiRat:ctx.aktivitiRat,aktivitiSebenar:document.getElementById('lmkActual')?.value||'',objektif:document.getElementById('lmkObjective')?.value||'',pelaksanaan:document.getElementById('lmkImplementation')?.value||'',catatan:document.getElementById('lmkNotes')?.value||'',evidens:document.getElementById('lmkEvidence')?.value||''};
+  try{const res=await fetch(WEB_APP_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'saveLMK',record})});const result=await res.json();if(result.status!=='ok')throw new Error(result.message||'Gagal menyimpan LMK.');closeModal();toast(result.message||'LMK disimpan.');await loadLMKModule();}catch(err){toast(err.message||'Gagal menyimpan LMK.');}
+}
+
 function openModal(type){
+if(type==='lmk'){openLMKForm(arguments[1]||{});return;}
 let content='';
 if(type==='rollover')content=`<div class="modalHead"><div><h2 style="margin:0">Sediakan Tahun Baharu</h2><p class="muted">Proses terkawal oleh Admin.</p></div><button class="close" onclick="closeModal()">×</button></div><div class="card" style="background:#f8fafc"><b>2026 → 2027</b><p class="muted">Tahun 4 → 5 • Tahun 5 → 6 • Tahun 6 tidak dibawa</p><p class="muted">Jawatan murid akan menjadi <b>cadangan</b> sahaja. Guru masih boleh mengubahnya.</p></div><div class="actions"><button class="primary" onclick="closeModal();toast('Langkah rollover sedia untuk disambungkan ke Google Sheets.')">Teruskan</button><button class="secondary" onclick="closeModal()">Batal</button></div>`;
 if(type==='opSetup'){const s=masterOperasiSetup||{};content=`<div class="modalHead"><div><h2 style="margin:0">Setup Master Operasi</h2><p class="muted">Sumber kepada Kalendar setahun.</p></div><button class="close" onclick="closeModal()">×</button></div><div class="form"><div class="field"><label>TAHUN</label><input id="modalOpSetupYear" type="number" value="${escapeHtml(s['TAHUN']||'')}"></div><div class="field"><label>TARIKH MULA SEKOLAH</label><input id="modalOpSetupStart" type="date" value="${escapeHtml(s['TARIKH MULA SEKOLAH']||'')}"></div><div class="field"><label>TARIKH AKHIR SEKOLAH</label><input id="modalOpSetupEnd" type="date" value="${escapeHtml(s['TARIKH AKHIR SEKOLAH']||'')}"></div><div class="field"><label>STATUS</label><select id="modalOpSetupStatus"><option value="AKTIF" ${(s['STATUS']||'AKTIF')==='AKTIF'?'selected':''}>AKTIF</option><option value="DRAF" ${(s['STATUS']||'')==='DRAF'?'selected':''}>DRAF</option></select></div></div><div class="actions" style="margin-top:16px"><button class="secondary" onclick="closeModal()">Batal</button><button class="primary" onclick="saveOperasiSetup()">Simpan Setup</button></div>`;}
