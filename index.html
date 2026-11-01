@@ -2849,7 +2849,22 @@ let lmkUnitsCache=[];
 let lmkMeetingsCache=[];
 let lmkSavedCache=[];
 let lmkLoadedYear='';
-const lmkTeacherFields={UBB1:'PENGAKAP',UBB2:'TKRS',UKP1:'PAI',UKP2:'PBI',UKP3:'KPA',USP1:'KC',USP2:'KBS',USP3:'KBB'};
+// Padanan guru bertugas dibuat berdasarkan NAMA UNIT daripada Master Kelab.
+// UBB1/UKP1/USP1 dan seterusnya ialah penanda BIL PERJUMPAAN, bukan kod unit.
+const lmkTeacherFieldsByName={
+  'PENGAKAP':'PENGAKAP','TUNAS KADET REMAJA SEKOLAH':'TKRS','TKRS':'TKRS',
+  'PERSATUAN AGAMA ISLAM':'PAI','PAI':'PAI',
+  'PERSATUAN BAHASA INGGERIS':'PBI','PBI':'PBI',
+  'KELAB ALAM SEKITAR':'KPA','KELAB PENCINTA ALAM':'KPA','KPA':'KPA',
+  'KELAB CATUR':'KC','KC':'KC','KELAB BOLA SEPAK':'KBS','KBS':'KBS',
+  'KELAB BOLA BALING':'KBB','KBB':'KBB'
+};
+function lmkNormalizeName(v){return String(v||'').trim().toUpperCase().replace(/\s+/g,' ');}
+function lmkGetTeacherField(unit){return lmkTeacherFieldsByName[lmkNormalizeName(unit?.['NAMA UNIT'])]||'';}
+function lmkGetMeetingNumber(value,fallback){
+  const match=String(value||'').trim().toUpperCase().match(/^(?:UBB|UKP|USP)\s*0*(\d+)$/);
+  return match?String(Number(match[1])):String(fallback);
+}
 function lmkCellDate(v){
   if(!v)return '—';
   const d=new Date(v);
@@ -2882,11 +2897,15 @@ async function loadLMKModule(){
 }
 function renderLMKModule(){
   const year=String(document.getElementById('lmkYearSelect')?.value||'');const code=String(document.getElementById('lmkUnitSelect')?.value||'');
-  const unit=lmkUnitsCache.find(u=>String(u['KOD UNIT'])===code);const comp=String(unit?.KOMPONEN||'').trim().toUpperCase();
-  const teacherField=lmkTeacherFields[code]||'';
-  const meetings=lmkMeetingsCache.filter(r=>String(r[comp]||'').trim()!=='' ).sort((a,b)=>String(a.TARIKH||'').localeCompare(String(b.TARIKH||'')));
-  const saved=lmkSavedCache.filter(r=>String(r['KOD UNIT'])===code);
-  const savedByBil=new Map(saved.map(r=>[String(r['BIL PERJUMPAAN']),r]));
+  const unit=lmkUnitsCache.find(u=>String(u['KOD UNIT']).trim()===code);
+  const comp=String(unit?.KOMPONEN||'').trim().toUpperCase();
+  const teacherField=lmkGetTeacherField(unit);
+  const meetings=lmkMeetingsCache.filter(r=>String(r[comp]||'').trim()!=='').sort((a,b)=>{
+    const na=Number(lmkGetMeetingNumber(a[comp],0)),nb=Number(lmkGetMeetingNumber(b[comp],0));
+    return na-nb || String(a.TARIKH||'').localeCompare(String(b.TARIKH||''));
+  });
+  const saved=lmkSavedCache.filter(r=>String(r['TAHUN']).trim()===year && String(r['KOD UNIT']).trim()===code);
+  const savedByBil=new Map(saved.map(r=>[String(r['BIL PERJUMPAAN']).trim(),r]));
   const complete=saved.filter(r=>String(r['STATUS LMK']).toUpperCase()==='LENGKAP').length;
   const drafts=saved.filter(r=>String(r['STATUS LMK']).toUpperCase()==='DRAF').length;
   const evidence=saved.filter(r=>String(r.EVIDENS||'').trim()).length;
@@ -2894,8 +2913,32 @@ function renderLMKModule(){
   const metrics=document.querySelectorAll('#lmkMetrics .metric .value');if(metrics.length>=4){metrics[0].textContent=`${complete} / ${total}`;metrics[1].textContent=String(pending);metrics[2].textContent=String(evidence);metrics[3].textContent=(total?Math.round(complete/total*100):0)+'%';}
   document.getElementById('lmkMeetingTitle').textContent='Perjumpaan '+String(unit?.['NAMA UNIT']||'');document.getElementById('lmkMeetingCount').textContent=total+' PERJUMPAAN';document.getElementById('lmkYearLabel').textContent=year;
   const tbody=document.querySelector('#lmkMeetingTable tbody');
-  if(tbody){tbody.innerHTML=meetings.length?meetings.map((r,i)=>{const bil=String(r.BIL||i+1);const rec=savedByBil.get(bil);const st=String(rec?.['STATUS LMK']||'BELUM DIISI').toUpperCase();const badge=st==='LENGKAP'?'green':st==='DRAF'?'amber':'amber';const teacher=String(r[teacherField]||'').trim()||'—';const activity=String(r[comp]||'').trim()||'—';return `<tr><td>${escapeHtml(bil)}</td><td>${escapeHtml(lmkCellDate(r.TARIKH))}</td><td>${escapeHtml(r.MINGGU||'—')}</td><td>${escapeHtml(teacher)}</td><td>${escapeHtml(activity)}</td><td><span class="badge ${badge}">${escapeHtml(st)}</span></td><td><button class="secondary" onclick="openLMKFormEncoded('${encodeURIComponent(JSON.stringify({tahun:year,kodUnit:code,namaUnit:unit?.["NAMA UNIT"]||"",komponen:comp,bilPerjumpaan:bil,tarikh:r.TARIKH,minggu:r.MINGGU,guruBertugas:teacher,aktivitiRat:activity,disediakanOleh:currentUser?.nama||"",saved:rec||null}))}')">${rec?'Lihat / Edit':'Isi LMK'}</button></td></tr>`;}).join(''):'<tr><td colspan="7" class="empty">Tiada jadual perjumpaan untuk unit ini dalam Master Operasi bagi tahun dipilih.</td></tr>';}
-  const annual=document.querySelector('#lmkAnnualTable tbody');if(annual){annual.innerHTML=lmkUnitsCache.filter(u=>!String(u.TAHUN||'').trim()||String(u.TAHUN).trim()===year).map((u,i)=>{const rows=lmkSavedCache.filter(r=>String(r['KOD UNIT'])===String(u['KOD UNIT']));const done=rows.filter(r=>String(r['STATUS LMK']).toUpperCase()==='LENGKAP').length;const draft=rows.filter(r=>String(r['STATUS LMK']).toUpperCase()==='DRAF').length;const planned=lmkMeetingsCache.filter(r=>String(r[String(u.KOMPONEN||'').toUpperCase()]||'').trim()!=='').length;const pct=planned?Math.round(done/planned*100):0;return `<tr><td>${i+1}</td><td>${escapeHtml(u['KOD UNIT'])}</td><td><b>${escapeHtml(u['NAMA UNIT'])}</b></td><td>${escapeHtml(u.KOMPONEN)}</td><td>${done}</td><td>${draft}</td><td>${Math.max(0,planned-done-draft)}</td><td><b>${pct}%</b></td></tr>`;}).join('')||'<tr><td colspan="8" class="empty">Tiada unit aktif untuk tahun ini.</td></tr>';}
+  if(tbody){tbody.innerHTML=meetings.length?meetings.map((r,i)=>{
+    // Nombor perjumpaan diambil daripada penanda UBB1/UKP1/USP1,
+    // bukan nombor baris global Master Operasi.
+    const bil=lmkGetMeetingNumber(r[comp],i+1);
+    const rec=savedByBil.get(bil);
+    const st=String(rec?.['STATUS LMK']||'BELUM DIISI').toUpperCase();
+    const badge=st==='LENGKAP'?'green':st==='DRAF'?'amber':'amber';
+    const teacher=String(teacherField ? r[teacherField] : (r['GURU BERTUGAS']||'')).trim()||'—';
+    const activity=String(r['AKTIVITI / MODUL RAT']||r['AKTIVITI / PROGRAM']||'').trim()||'—';
+    return `<tr><td>${escapeHtml(bil)}</td><td>${escapeHtml(lmkCellDate(r.TARIKH))}</td><td>${escapeHtml(r.MINGGU||'—')}</td><td>${escapeHtml(teacher)}</td><td>${escapeHtml(activity)}</td><td><span class="badge ${badge}">${escapeHtml(st)}</span></td><td><button class="secondary" onclick="openLMKFormEncoded('${encodeURIComponent(JSON.stringify({tahun:year,kodUnit:code,namaUnit:unit?.["NAMA UNIT"]||"",komponen:comp,bilPerjumpaan:bil,tarikh:r.TARIKH,minggu:r.MINGGU,guruBertugas:teacher,aktivitiRat:activity,disediakanOleh:currentUser?.nama||"",saved:rec||null}))}')">${rec?'Lihat / Edit':'Isi LMK'}</button></td></tr>`;
+  }).join(''):'<tr><td colspan="7" class="empty">Tiada jadual perjumpaan untuk unit ini dalam Master Operasi bagi tahun dipilih.</td></tr>';}
+  const annual=document.querySelector('#lmkAnnualTable tbody');if(annual){
+    annual.innerHTML=lmkUnitsCache
+      .filter(u=>!String(u.TAHUN||'').trim()||String(u.TAHUN).trim()===year)
+      .map((u,i)=>{
+        const unitCode=String(u['KOD UNIT']||'').trim();
+        const rows=lmkSavedCache.filter(r=>String(r['TAHUN']).trim()===year && String(r['KOD UNIT']).trim()===unitCode);
+        const done=rows.filter(r=>String(r['STATUS LMK']).toUpperCase()==='LENGKAP').length;
+        const draft=rows.filter(r=>String(r['STATUS LMK']).toUpperCase()==='DRAF').length;
+        const component=String(u.KOMPONEN||'').trim().toUpperCase();
+        const planned=lmkMeetingsCache.filter(r=>String(r[component]||'').trim()!=='').length;
+        const pending=Math.max(0,planned-done-draft);
+        const pct=planned?Math.round(done/planned*100):0;
+        return `<tr><td>${i+1}</td><td>${escapeHtml(unitCode)}</td><td><b>${escapeHtml(u['NAMA UNIT'])}</b></td><td>${escapeHtml(u.KOMPONEN)}</td><td>${done}</td><td>${draft}</td><td>${pending}</td><td><b>${pct}%</b></td></tr>`;
+      }).join('')||'<tr><td colspan="8" class="empty">Tiada unit aktif untuk tahun ini.</td></tr>';
+  }
 }
 function openLMKFormEncoded(encoded){try{openLMKForm(JSON.parse(decodeURIComponent(encoded)));}catch(e){toast('Maklumat perjumpaan tidak dapat dibuka.');}}
 function openLMKForm(ctx){
@@ -2995,7 +3038,7 @@ if(type==='student')content=`<div class="modalHead"><div><h2 style="margin:0">Da
 <div class="actions" style="margin-top:16px"><button class="secondary" onclick="closeModal()">Batal</button><button class="primary" onclick="saveRegisteredStudent()">Simpan</button></div>`;
 if(type==='club')content=`<div class="modalHead"><div><h2 style="margin:0">Tambah Unit</h2><p class="muted">Daftar unit dan pilih guru terus daripada Master Guru.</p></div><button class="close" onclick="closeModal()">×</button></div>
 <div class="form">
-  <div class="field"><label>KOD UNIT</label><input id="clubKod" placeholder="Contoh: UBB1"></div>
+  <div class="field"><label>KOD UNIT</label><input id="clubKod" placeholder="Masukkan kod unit sebenar"></div>
   <div class="field"><label>NAMA UNIT</label><input id="clubNama" placeholder="Contoh: PENGAKAP"></div>
   <div class="field"><label>KOMPONEN</label><select id="clubKomponen"><option value="UBB">UBB</option><option value="UKP">UKP</option><option value="USP">USP</option></select></div>
   <div class="field">
