@@ -137,7 +137,7 @@ td.actions button{padding:5px 8px!important;font-size:11px!important;white-space
 <section id="dashboard" class="page active">
 <div class="title"><div><h1>Selamat datang 👋</h1><p>Sistem Pengurusan Gerak Kerja Kokurikulum</p></div><span class="badge green">TAHUN 2026</span></div>
 <div class="grid4">
-<div class="card metric"><div class="label">Murid Tahap 2</div><div class="value">—</div><div class="foot">Master Murid</div></div>
+<div class="card metric"><div class="label">Murid Tahap 2</div><div class="value">—</div><div class="foot">Prasekolah hingga Tahun 6</div></div>
 <div class="card metric"><div class="label">Guru</div><div class="value">—</div><div class="foot">Master Guru</div></div>
 <div class="card metric"><div class="label">Unit / Kelab</div><div class="value">—</div><div class="foot">Master Kelab</div></div>
 <div class="card metric"><div class="label">LMK Lengkap</div><div class="value">—</div><div class="foot">Bil 1–12</div></div>
@@ -374,7 +374,7 @@ td.actions button{padding:5px 8px!important;font-size:11px!important;white-space
 
 <section id="murid" class="page">
 <div class="title">
-  <div><h1>Master Murid</h1><p>1 murid = 1 rekod. Tahap 2 sahaja untuk gerak kerja kokurikulum.</p></div>
+  <div><h1>Master Murid</h1><p>1 murid = 1 rekod induk. Prasekolah hingga Tahun 6; kehadiran kokurikulum untuk Tahun 4–6 sahaja.</p></div>
   <div class="actions">
     <button class="secondary" onclick="openModal('importStudents')">⇧ Import Pukal</button>
     <button class="primary" onclick="openModal('student')">＋ Daftar Murid</button>
@@ -382,16 +382,16 @@ td.actions button{padding:5px 8px!important;font-size:11px!important;white-space
 </div>
 
 <div class="grid4">
-  <div class="card metric"><div class="label">Jumlah Murid</div><div class="value">—</div><div class="foot">Master Murid</div></div>
-  <div class="card metric"><div class="label">Tahun 4</div><div class="value">—</div><div class="foot">Pendaftaran baharu</div></div>
-  <div class="card metric"><div class="label">Tahun 5</div><div class="value">—</div><div class="foot">Naik tahun automatik</div></div>
+  <div class="card metric"><div class="label">Jumlah Murid Aktif</div><div class="value">—</div><div class="foot">Master Murid</div></div>
+  <div class="card metric"><div class="label">Prasekolah – Tahun 3</div><div class="value">—</div><div class="foot">Tidak masuk kehadiran kokurikulum</div></div>
+  <div class="card metric"><div class="label">Tahun 4 – Tahun 5</div><div class="value">—</div><div class="foot">Peserta kokurikulum</div></div>
   <div class="card metric"><div class="label">Tahun 6</div><div class="value">—</div><div class="foot">Tahun akhir</div></div>
 </div>
 
 <div class="card" style="margin-top:16px">
   <div class="toolbar">
     <div><h3 style="margin:0">Senarai Master Murid</h3><small class="muted">Nama murid tidak diulang. Keahlian UBB/UKP/USP berada pada kolum unit masing-masing.</small></div>
-    <div class="actions"><input style="max-width:260px" placeholder="Cari nama / kelas"></div>
+    <div class="actions" style="flex-wrap:wrap"><select id="studentYearFilter" style="max-width:130px"><option value="">Semua tahun</option></select><select id="studentStageFilter" style="max-width:170px"><option value="SEMUA">Semua peringkat</option><option value="PRASEKOLAH">Prasekolah</option><option value="1">Tahun 1</option><option value="2">Tahun 2</option><option value="3">Tahun 3</option><option value="4">Tahun 4</option><option value="5">Tahun 5</option><option value="6">Tahun 6</option></select><select id="studentStatusFilter" style="max-width:160px"><option value="AKTIF">Murid aktif</option><option value="SEMUA">Semua status</option><option value="BERPINDAH">Berpindah</option><option value="TAMAT SEKOLAH">Tamat sekolah</option></select><input id="searchMasterMurid" style="max-width:220px" placeholder="Cari ID / nama / kelas"></div>
   </div>
   <div class="tableWrap"><table>
     <thead><tr>
@@ -407,6 +407,14 @@ td.actions button{padding:5px 8px!important;font-size:11px!important;white-space
 
 <div class="card">
   <div class="toolbar"><h3 style="margin:0">Kawalan Data Murid</h3><span class="badge">1 MURID = 1 REKOD</span></div>
+  <div class="grid3">
+    <div><b>Cycle Tahun</b><p class="muted" style="font-size:12px">Prasekolah → Tahun 1 → Tahun 2 → Tahun 3 → Tahun 4 → Tahun 5 → Tahun 6 → Tamat Sekolah.</p></div>
+    <div><b>Pengasingan kehadiran</b><p class="muted" style="font-size:12px">Prasekolah hingga Tahun 3 disimpan dalam Master Murid tetapi tidak disenaraikan untuk kehadiran kokurikulum.</p></div>
+    <div><b>Status murid</b><p class="muted" style="font-size:12px">Murid berpindah dan tamat sekolah dikekalkan sebagai sejarah, bukan dipadam terus.</p></div>
+  </div>
+  <small class="muted">Cycle Tahun dan perubahan rekod Google Sheets akan disambungkan dalam fasa backend.</small>
+</div>
+<div class="card" style="display:none">
   <div class="grid3">
     <div><b>✓ Semakan duplicate</b><p class="muted" style="font-size:12px">Nama murid yang sama tidak boleh didaftarkan dua kali dalam Master Murid.</p></div>
     <div><b>✓ Import pukal</b><p class="muted" style="font-size:12px">Daftar ramai murid sekaligus daripada fail CSV atau Excel (.xlsx).</p></div>
@@ -510,6 +518,12 @@ td.actions button{padding:5px 8px!important;font-size:11px!important;white-space
 
   <div class="card">
     <div class="form">
+      <div class="field full">
+        <label>TAHUN REKOD</label>
+        <select id="khYear">
+          <option value="">Memuatkan tahun...</option>
+        </select>
+      </div>
       <div class="field">
         <label>KELAB / UNIT</label>
         <select id="khUnit">
@@ -650,11 +664,13 @@ async function loadOperasiSetup(){
     if(result.status==='error') throw new Error(result.message||'Gagal membaca Setup Master Operasi.');
     masterOperasiSetup=Object.assign(masterOperasiSetup,result.data||{});
     renderOperasiSetup();
+    await loadMasterOperasi();
     await loadOperasiCuti();
     renderOperasiCalendar();
   }catch(err){
     console.error(err);
     renderOperasiSetup();
+    await loadMasterOperasi();
     await loadOperasiCuti();
   }
 }
@@ -689,7 +705,14 @@ async function saveOperasiSetup(){
     const result=await response.json();
     if(result.status!=='ok') throw new Error(result.message||'Gagal menyimpan Setup.');
     masterOperasiSetup=result.data||record;
-    closeModal(); renderOperasiSetup(); toast(result.message||'Setup berjaya disimpan.');
+    closeModal();
+    renderOperasiSetup();
+    // Apabila tahun aktif berubah, segarkan jadual operasi dan cuti
+    // supaya hanya rekod bagi tahun yang dipilih dipaparkan.
+    await loadMasterOperasi();
+    await loadOperasiCuti();
+    renderOperasiCalendar();
+    toast(result.message||'Setup berjaya disimpan.');
   }catch(err){toast(err.message||'Gagal menyimpan Setup.');}
 }
 
@@ -1002,13 +1025,21 @@ async function loadMasterOperasi(){
 
     thead.innerHTML='<tr>'+displayHeaders.map(x=>'<th>'+escapeHtml(x)+'</th>').join('')+'</tr>';
 
-    if(!masterOperasiCache.length){
-      tbody.innerHTML='<tr><td class="empty" colspan="'+displayHeaders.length+'">Tiada rekod dalam Master Operasi.</td></tr>';
+    const activeYear=String(masterOperasiSetup?.['TAHUN']||'').trim();
+    // Cache menyimpan semua tahun untuk kegunaan modul lain/arkib.
+    // Jadual atas hanya memaparkan rekod bagi tahun aktif.
+    const visibleRows=masterOperasiCache
+      .map((r,sourceIndex)=>({r,sourceIndex}))
+      .filter(item=>String(item.r['TAHUN']??'').trim()===activeYear);
+
+    if(!visibleRows.length){
+      tbody.innerHTML='<tr><td class="empty" colspan="'+displayHeaders.length+'">Tiada rekod Master Operasi bagi tahun '+escapeHtml(activeYear||'aktif')+'. Rekod tahun lain kekal dalam Google Sheet.</td></tr>';
+      renderOperasiTakwim();
       return;
     }
 
-    tbody.innerHTML=masterOperasiCache.map((r,index)=>`<tr>
-      <td>${escapeHtml(String(r['BIL']||index+1).trim())}</td>
+    tbody.innerHTML=visibleRows.map(({r,sourceIndex},displayIndex)=>`<tr>
+      <td>${escapeHtml(String(r['BIL']||displayIndex+1).trim())}</td>
       <td>${val(r,'TAHUN')}</td>
       <td>${val(r,'MINGGU')}</td>
       <td><b>${displayDate(r['TARIKH'])}</b></td>
@@ -1019,7 +1050,7 @@ async function loadMasterOperasi(){
       <td>${val(r,'USP')}</td>
       <td>${val(r,'STATUS JADUAL')}</td>
       <td>
-        <button class="secondary" onclick="openMasterOperasiEdit(${index})">✏️ Edit</button>
+        <button class="secondary" onclick="openMasterOperasiEdit(${sourceIndex})">✏️ Edit</button>
       </td>
     </tr>`).join('');
 
@@ -1296,7 +1327,7 @@ function initializeApp(){
   setupMasterGuru();
   loadMasterKelab();
   loadMasterGuru();
-  loadMasterOperasi();
+  // Master Operasi dimuat selepas Setup Tahun selesai dibaca.
   loadOperasiSetup();
 
   document.querySelectorAll('.opTab').forEach(b=>b.addEventListener('click',()=>{
@@ -1405,32 +1436,118 @@ document.getElementById('loginForm').addEventListener('submit',handleLogin);
 
 
 let khReady = false;
+let khSelectedYear = '';
 
 async function setupKehadiran(){
   const unitSelect = document.getElementById('khUnit');
   const meetingSelect = document.getElementById('khPerjumpaan');
+  const yearSelect = document.getElementById('khYear');
   const empty = document.getElementById('khEmpty');
 
-  if(!unitSelect || !meetingSelect) return;
+  if(!unitSelect || !meetingSelect || !yearSelect) return;
 
   if(empty){
     empty.style.display = 'block';
-    empty.textContent = 'Membaca senarai unit daripada Master Kelab...';
+    empty.textContent = 'Membaca data kehadiran...';
   }
 
-  await Promise.allSettled([loadMasterKelab(), loadMasterMurid()]);
-  populateKehadiranUnits();
-  loadKehadiranSummary();
+  await Promise.allSettled([
+    loadMasterKelab(),
+    loadMasterMurid(),
+    loadMasterOperasi()
+  ]);
+
+  const activeYear = String(masterOperasiSetup?.['TAHUN'] || '').trim();
+  if(!khSelectedYear) khSelectedYear = activeYear;
 
   if(!khReady){
     khReady = true;
+    yearSelect.addEventListener('change', handleKehadiranYearChange);
     unitSelect.addEventListener('change', handleKehadiranUnitChange);
     meetingSelect.addEventListener('change', handleKehadiranMeetingChange);
     setupKehadiranBulkActions();
   }
 
+  populateKehadiranYears();
+  populateKehadiranUnits();
+  await loadKehadiranSummary();
+
   if(empty && !unitSelect.value){
     empty.textContent = 'Pilih kelab / unit untuk memulakan rekod kehadiran.';
+  }
+}
+
+function getKehadiranAvailableYears(summaryRows = []){
+  const years = new Set();
+  const activeYear = String(masterOperasiSetup?.['TAHUN'] || '').trim();
+  if(/^\d{4}$/.test(activeYear)) years.add(activeYear);
+
+  (masterKelabCache || []).forEach(r => {
+    const year = String(r['TAHUN'] || '').trim();
+    if(/^\d{4}$/.test(year)) years.add(year);
+  });
+
+  (masterOperasiCache || []).forEach(r => {
+    const year = String(r['TAHUN'] || '').trim();
+    if(/^\d{4}$/.test(year)) years.add(year);
+  });
+
+  (summaryRows || []).forEach(r => {
+    const year = String(r.TAHUN || '').trim();
+    if(/^\d{4}$/.test(year)) years.add(year);
+  });
+
+  return [...years].sort((a,b) => Number(b) - Number(a));
+}
+
+function populateKehadiranYears(summaryRows = []){
+  const select = document.getElementById('khYear');
+  if(!select) return;
+
+  const years = getKehadiranAvailableYears(summaryRows);
+  const activeYear = String(masterOperasiSetup?.['TAHUN'] || '').trim();
+
+  if(!khSelectedYear || !years.includes(khSelectedYear)){
+    khSelectedYear = activeYear && years.includes(activeYear)
+      ? activeYear
+      : (years[0] || activeYear || '');
+  }
+
+  select.innerHTML = years.length
+    ? years.map(year => `<option value="${escapeHtml(year)}">${escapeHtml(year)}</option>`).join('')
+    : '<option value="">Tiada tahun tersedia</option>';
+  select.value = khSelectedYear;
+}
+
+async function handleKehadiranYearChange(){
+  const yearSelect = document.getElementById('khYear');
+  const unitSelect = document.getElementById('khUnit');
+  const meetingSelect = document.getElementById('khPerjumpaan');
+  const roster = document.getElementById('khRoster');
+  const empty = document.getElementById('khEmpty');
+
+  khSelectedYear = String(yearSelect?.value || '').trim();
+
+  if(roster) roster.style.display = 'none';
+  resetKehadiranSaveState();
+
+  if(unitSelect) unitSelect.value = '';
+  if(meetingSelect){
+    meetingSelect.innerHTML = '<option value="">Pilih kelab / unit dahulu</option>';
+    meetingSelect.disabled = true;
+  }
+
+  const count = document.getElementById('khMemberCount');
+  const info = document.getElementById('khInfo');
+  if(count) count.textContent = '0 AHLI';
+  if(info) info.textContent = 'Ahli aktif akan dipaparkan mengikut kelab / unit yang dipilih.';
+
+  populateKehadiranUnits();
+  await loadKehadiranSummary();
+
+  if(empty){
+    empty.style.display = 'block';
+    empty.textContent = `Tahun ${khSelectedYear}: pilih kelab / unit untuk memulakan rekod kehadiran.`;
   }
 }
 
@@ -1443,15 +1560,13 @@ function populateKehadiranUnits(){
   let units = (masterKelabCache || [])
     .filter(r => String(r['STATUS'] || 'AKTIF').trim().toUpperCase() === 'AKTIF');
 
-  // Jika tahun semasa sudah tersedia dalam Master Operasi Setup,
-  // hanya papar unit bagi tahun tersebut.
-  const currentYear = String(masterOperasiSetup?.['TAHUN'] || '').trim();
-  if(currentYear){
-    const byYear = units.filter(r => {
+  // Paparkan unit mengikut Tahun Rekod yang dipilih.
+  const selectedYear = String(khSelectedYear || masterOperasiSetup?.['TAHUN'] || '').trim();
+  if(selectedYear){
+    units = units.filter(r => {
       const year = String(r['TAHUN'] || '').trim();
-      return !year || year === currentYear;
+      return !year || year === selectedYear;
     });
-    if(byYear.length) units = byYear;
   }
 
   units.sort((a,b) =>
@@ -1490,13 +1605,13 @@ function getKehadiranMeetings(){
   if(!unit) return [];
 
   const component = String(unit['KOMPONEN'] || '').trim().toUpperCase();
-  const currentYear = String(masterOperasiSetup?.['TAHUN'] || '').trim();
+  const selectedYear = String(khSelectedYear || masterOperasiSetup?.['TAHUN'] || '').trim();
 
   return (masterOperasiCache || [])
     .filter(r => {
       const rowYear = String(r['TAHUN'] || '').trim();
       if(!isKehadiranMarkerActive(r[component])) return false;
-      if(currentYear && rowYear && rowYear !== currentYear) return false;
+      if(selectedYear && rowYear && rowYear !== selectedYear) return false;
       return true;
     })
     .sort((a,b) => {
@@ -1988,11 +2103,19 @@ async function loadKehadiranSummary(){
     const result = await response.json();
     if(result.status === 'error') throw new Error(result.message || 'Gagal membaca ringkasan kehadiran.');
 
-    const rows = Array.isArray(result.data) ? result.data : [];
+    const allRows = Array.isArray(result.data) ? result.data : [];
+    populateKehadiranYears(allRows);
+
+    const selectedYear = String(khSelectedYear || masterOperasiSetup?.['TAHUN'] || '').trim();
+    const rows = allRows.filter(r =>
+      !selectedYear || String(r.TAHUN || '').trim() === selectedYear
+    );
+
     if(count) count.textContent = `${rows.length} REKOD`;
 
     if(!rows.length){
-      tbody.innerHTML = '<tr><td colspan="11" class="empty">Belum ada rekod kehadiran disimpan.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="11" class="empty">Belum ada rekod kehadiran disimpan bagi tahun ' +
+        escapeHtml(selectedYear || 'dipilih') + '.</td></tr>';
       return;
     }
 
@@ -2245,6 +2368,7 @@ async function saveSelectedKeahlian(){
         body:JSON.stringify({
           action:'updateMurid',
           oldId:student['ID MURID'],
+          oldYear:student['TAHUN'],
           record
         })
       });
@@ -2298,7 +2422,7 @@ async function saveKeahlianJawatan(index){
     const response=await fetch(WEB_APP_URL,{
       method:'POST',
       headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body:JSON.stringify({action:'updateMurid',oldId:student['ID MURID'],record})
+      body:JSON.stringify({action:'updateMurid',oldId:student['ID MURID'],oldYear:student['TAHUN'],record})
     });
     const result=await response.json();
     if(result.status!=='ok') throw new Error(result.message||'Gagal menyimpan jawatan.');
@@ -2557,25 +2681,8 @@ async function loadMasterMurid(){
       return obj;
     });
 
-    renderMasterMurid(masterMuridCache);
-
-    // Kad ringkasan
-    if(metrics.length >= 4){
-      const aktif = masterMuridCache.filter(r => String(r['STATUS MURID'] || '').toUpperCase() === 'AKTIF');
-      metrics[0].textContent = aktif.length;
-      metrics[1].textContent = aktif.filter(r => {
-        const kelas = String(r['KELAS'] || '').trim();
-        return /^4(?:\s|$)/.test(kelas);
-      }).length;
-      metrics[2].textContent = aktif.filter(r => {
-        const kelas = String(r['KELAS'] || '').trim();
-        return /^5(?:\s|$)/.test(kelas);
-      }).length;
-      metrics[3].textContent = aktif.filter(r => {
-        const kelas = String(r['KELAS'] || '').trim();
-        return /^6(?:\s|$)/.test(kelas);
-      }).length;
-    }
+    populateMasterMuridYears();
+    filterMasterMurid();
 
   }catch(err){
     tableBody.innerHTML =
@@ -2584,73 +2691,77 @@ async function loadMasterMurid(){
   }
 }
 
+function studentStage(record){
+  // Peringkat murid ditentukan daripada KELAS sahaja.
+  // Ruangan TAHUN ialah tahun rekod persekolahan (contohnya 2026), bukan peringkat.
+  const raw=String(record['KELAS']??'').trim().toUpperCase();
+  if(!raw) return '';
+  if(/PRASEKOLAH|\bPRA\b/.test(raw)) return 'PRASEKOLAH';
+
+  // Format seperti "TAHUN 4", "4 GEMILANG", "5 AMANAH", "6 BESTARI".
+  let m=raw.match(/^(?:TAHUN\s*)?([1-6])(?:\b|\s|[-_/])/);
+  if(m) return m[1];
+
+  // Nilai kelas yang hanya mengandungi nombor 1 hingga 6.
+  if(/^[1-6]$/.test(raw)) return raw;
+  return '';
+}
 function renderMasterMurid(records){
-  const page = document.getElementById('murid');
+  const page=document.getElementById('murid');
   if(!page) return;
-
-  const tableBody = page.querySelector('.tableWrap table tbody');
+  const tableBody=page.querySelector('.tableWrap table tbody');
   if(!tableBody) return;
-
-  if(!records.length){
-    tableBody.innerHTML =
-      '<tr><td colspan="14" class="empty">Tiada rekod murid dalam Master Murid.</td></tr>';
-    return;
-  }
-
-  tableBody.innerHTML = records.map((r,index) => {
-    const status = String(r['STATUS MURID'] || '');
-    const statusClass = status.toUpperCase() === 'AKTIF' ? 'green' : 'amber';
-
-    return `
-      <tr>
-        <td>${index + 1}</td>
-        <td>${escapeHtml(r['ID MURID'] || '—')}</td>
-        <td>${escapeHtml(r['NAMA MURID'])}</td>
-        <td>${escapeHtml(r['JANTINA'])}</td>
-        <td>${escapeHtml(r['KELAS'])}</td>
-        <td>${escapeHtml(r['TAHUN'])}</td>
-        <td>${escapeHtml(r['UBB'])}</td>
-        <td>${escapeHtml(r['JAWATAN UBB'])}</td>
-        <td>${escapeHtml(r['UKP'])}</td>
-        <td>${escapeHtml(r['JAWATAN UKP'])}</td>
-        <td>${escapeHtml(r['USP'])}</td>
-        <td>${escapeHtml(r['JAWATAN USP'])}</td>
-        <td>—</td>
-        <td><span class="badge ${statusClass}">${escapeHtml(status || '—')}</span></td>
-        <td class="actions">
-          <button class="secondary" style="padding:6px 10px" onclick="editMasterMurid(${index})">Edit</button>
-          <button class="danger" style="padding:6px 10px" onclick="deleteMasterMurid(${index})">Padam</button>
-        </td>
-      </tr>
-    `;
+  if(!records.length){tableBody.innerHTML='<tr><td colspan="15" class="empty">Tiada rekod murid bagi pilihan penapis ini.</td></tr>';return;}
+  tableBody.innerHTML=records.map((r,index)=>{
+    const status=String(r['STATUS MURID']||'AKTIF').toUpperCase();
+    const statusClass=status==='AKTIF'?'green':status==='BERPINDAH'?'amber':'';
+    const originalIndex=masterMuridCache.indexOf(r);
+    const eligible=['4','5','6'].includes(studentStage(r))&&status==='AKTIF';
+    return `<tr><td>${index+1}</td><td>${escapeHtml(r['ID MURID']||'—')}</td><td>${escapeHtml(r['NAMA MURID']||'—')}</td><td>${escapeHtml(r['JANTINA']||'—')}</td><td>${escapeHtml(r['KELAS']||'—')}</td><td>${escapeHtml(r['TAHUN']||'—')}</td><td>${escapeHtml(r['UBB']||'—')}</td><td>${escapeHtml(r['JAWATAN UBB']||'—')}</td><td>${escapeHtml(r['UKP']||'—')}</td><td>${escapeHtml(r['JAWATAN UKP']||'—')}</td><td>${escapeHtml(r['USP']||'—')}</td><td>${escapeHtml(r['JAWATAN USP']||'—')}</td><td>${escapeHtml(r['RUMAH SUKAN']||'—')}</td><td><span class="badge ${statusClass}">${escapeHtml(status)}</span>${eligible?'':'<small class="muted" style="display:block">Tidak dalam kehadiran kokurikulum</small>'}</td><td class="actions"><button class="secondary" style="padding:6px 10px" onclick="editMasterMurid(${originalIndex})">Edit</button><button class="danger" style="padding:6px 10px" onclick="deleteMasterMurid(${originalIndex})">Padam</button></td></tr>`;
   }).join('');
 }
-
-function filterMasterMurid(keyword){
-  const q = String(keyword || '').trim().toUpperCase();
-
-  if(!q){
-    renderMasterMurid(masterMuridCache);
-    return;
-  }
-
-  renderMasterMurid(masterMuridCache.filter(r =>
-    String(r['ID MURID'] || '').toUpperCase().includes(q) ||
-    String(r['NAMA MURID'] || '').toUpperCase().includes(q) ||
-    String(r['KELAS'] || '').toUpperCase().includes(q)
-  ));
+function populateMasterMuridYears(){
+  const select=document.getElementById('studentYearFilter');
+  if(!select) return;
+  const previous=select.value;
+  const years=[...new Set((masterMuridCache||[])
+    .map(r=>String(r['TAHUN']||'').trim())
+    .filter(y=>/^\d{4}$/.test(y)))].sort((a,b)=>Number(a)-Number(b));
+  select.innerHTML='<option value="SEMUA">Semua tahun</option>'+years.map(y=>`<option value="${escapeHtml(y)}">${escapeHtml(y)}</option>`).join('');
+  if(years.includes(previous)) select.value=previous;
+  else if(years.length) select.value=years[years.length-1];
+  else select.value='SEMUA';
 }
-
-function setupMasterMurid(){
-  const page = document.getElementById('murid');
-  if(!page) return;
-
-  const search = page.querySelector('input[placeholder="Cari nama / kelas"]');
-
-  if(search){
-    search.addEventListener('input', () => filterMasterMurid(search.value));
+function filterMasterMurid(){
+  const q=String(document.getElementById('searchMasterMurid')?.value||'').trim().toUpperCase();
+  const year=document.getElementById('studentYearFilter')?.value||'SEMUA';
+  const stage=document.getElementById('studentStageFilter')?.value||'SEMUA';
+  const status=document.getElementById('studentStatusFilter')?.value||'AKTIF';
+  const filtered=masterMuridCache.filter(r=>{
+    const rowYear=String(r['TAHUN']||'').trim();
+    const matchesYear=year==='SEMUA'||rowYear===year;
+    const matchesText=!q||[r['ID MURID'],r['NAMA MURID'],r['KELAS'],r['TAHUN']].some(v=>String(v||'').toUpperCase().includes(q));
+    const matchesStage=stage==='SEMUA'||studentStage(r)===stage;
+    const rowStatus=String(r['STATUS MURID']||'AKTIF').toUpperCase();
+    return matchesYear&&matchesText&&matchesStage&&(status==='SEMUA'||rowStatus===status);
+  });
+  renderMasterMurid(filtered);
+  const page=document.getElementById('murid');
+  const metrics=page?.querySelectorAll('.grid4 .metric .value')||[];
+  if(metrics.length>=4){
+    const active=filtered.filter(r=>String(r['STATUS MURID']||'AKTIF').toUpperCase()==='AKTIF');
+    metrics[0].textContent=active.length;
+    metrics[1].textContent=active.filter(r=>['PRASEKOLAH','1','2','3'].includes(studentStage(r))).length;
+    metrics[2].textContent=active.filter(r=>['4','5'].includes(studentStage(r))).length;
+    metrics[3].textContent=active.filter(r=>studentStage(r)==='6').length;
   }
-
+}
+function setupMasterMurid(){
+  const page=document.getElementById('murid');if(!page)return;
+  ['searchMasterMurid','studentYearFilter','studentStageFilter','studentStatusFilter'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el&&!el.dataset.bound){el.addEventListener(id==='searchMasterMurid'?'input':'change',filterMasterMurid);el.dataset.bound='1';}
+  });
   loadMasterMurid();
 }
 
@@ -2683,13 +2794,15 @@ function fillStudentRegistrationOptions(){
 async function saveRegisteredStudent(){
   const nama=document.getElementById('regNama')?.value.trim();
   const jantina=document.getElementById('regJantina')?.value||'';
-  const tahun=document.getElementById('regTahun')?.value||'2026';
   const kelas=document.getElementById('regKelas')?.value||'';
+  const sm=kelas.toUpperCase().match(/(?:TAHUN\\s*)?([1-6])/);
+  const tahun=kelas.toUpperCase().includes('PRA')?'PRASEKOLAH':(sm?sm[1]:'');
   const ubb=document.getElementById('regUBB')?.value||'';
   const ukp=document.getElementById('regUKP')?.value||'';
   const usp=document.getElementById('regUSP')?.value||'';
 
-  if(!nama || !kelas){ toast('Nama murid dan kelas wajib diisi.'); return; }
+  if(!nama || !kelas){ toast('Nama murid dan peringkat / tahun wajib diisi.'); return; }
+  if(!['4','5','6'].includes(tahun)){document.getElementById('regUBB').value='';document.getElementById('regUKP').value='';document.getElementById('regUSP').value='';}
 
   try{
     const response=await fetch(WEB_APP_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({
@@ -2959,10 +3072,30 @@ async function saveLMK(ctx){
   try{const res=await fetch(WEB_APP_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'saveLMK',record})});const result=await res.json();if(result.status!=='ok')throw new Error(result.message||'Gagal menyimpan LMK.');closeModal();toast(result.message||'LMK disimpan.');await loadLMKModule();}catch(err){toast(err.message||'Gagal menyimpan LMK.');}
 }
 
+async function executeMuridCycle(){
+  const button=document.getElementById('confirmMuridCycle');
+  if(button){button.disabled=true;button.textContent='Sedang memproses...';}
+  try{
+    const response=await fetch(WEB_APP_URL,{
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify({action:'cycleMasterMurid',sourceYear:'2026',targetYear:'2027'})
+    });
+    const result=await response.json();
+    if(result.status!=='ok') throw new Error(result.message||'Cycle Master Murid gagal.');
+    closeModal();
+    await loadMasterMurid();
+    toast((result.message||'Cycle selesai.')+' Disalin: '+(result.copied||0)+'; Tahun 4→5: '+(result.year4To5||0)+'; Tahun 5→6: '+(result.year5To6||0)+'.');
+  }catch(err){
+    if(button){button.disabled=false;button.textContent='Sahkan Cycle 2026 → 2027';}
+    toast(err.message||'Gagal menjalankan cycle Master Murid.');
+  }
+}
+
 function openModal(type){
 if(type==='lmk'){openLMKForm(arguments[1]||{});return;}
 let content='';
-if(type==='rollover')content=`<div class="modalHead"><div><h2 style="margin:0">Sediakan Tahun Baharu</h2><p class="muted">Proses terkawal oleh Admin.</p></div><button class="close" onclick="closeModal()">×</button></div><div class="card" style="background:#f8fafc"><b>2026 → 2027</b><p class="muted">Tahun 4 → 5 • Tahun 5 → 6 • Tahun 6 tidak dibawa</p><p class="muted">Jawatan murid akan menjadi <b>cadangan</b> sahaja. Guru masih boleh mengubahnya.</p></div><div class="actions"><button class="primary" onclick="closeModal();toast('Langkah rollover sedia untuk disambungkan ke Google Sheets.')">Teruskan</button><button class="secondary" onclick="closeModal()">Batal</button></div>`;
+if(type==='rollover')content=`<div class="modalHead"><div><h2 style="margin:0">Cycle Master Murid 2026 → 2027</h2><p class="muted">Proses terkawal oleh Admin.</p></div><button class="close" onclick="closeModal()">×</button></div><div class="card" style="background:#f8fafc"><b>Rekod yang akan disalin</b><p class="muted">Tahun 4 → Tahun 5</p><p class="muted">Tahun 5 → Tahun 6</p><p class="muted">Tahun 6 kekal dalam sejarah 2026 dan tidak disalin.</p><p class="muted">ID murid dikekalkan. Rekod 2026 tidak diubah. Keahlian dan jawatan disalin sebagai rujukan awal untuk semakan guru.</p></div><p class="muted" style="font-size:12px">Rekod 2027 yang sudah wujud tidak akan digandakan. Proses ini boleh disemak semula tanpa menambah pendua.</p><div class="actions"><button class="primary" id="confirmMuridCycle" onclick="executeMuridCycle()">Sahkan Cycle 2026 → 2027</button><button class="secondary" onclick="closeModal()">Batal</button></div>`;
 if(type==='opSetup'){const s=masterOperasiSetup||{};content=`<div class="modalHead"><div><h2 style="margin:0">Setup Master Operasi</h2><p class="muted">Sumber kepada Kalendar setahun.</p></div><button class="close" onclick="closeModal()">×</button></div><div class="form"><div class="field"><label>TAHUN</label><input id="modalOpSetupYear" type="number" value="${escapeHtml(s['TAHUN']||'')}"></div><div class="field"><label>TARIKH MULA SEKOLAH</label><input id="modalOpSetupStart" type="date" value="${escapeHtml(s['TARIKH MULA SEKOLAH']||'')}"></div><div class="field"><label>TARIKH AKHIR SEKOLAH</label><input id="modalOpSetupEnd" type="date" value="${escapeHtml(s['TARIKH AKHIR SEKOLAH']||'')}"></div><div class="field"><label>STATUS</label><select id="modalOpSetupStatus"><option value="AKTIF" ${(s['STATUS']||'AKTIF')==='AKTIF'?'selected':''}>AKTIF</option><option value="DRAF" ${(s['STATUS']||'')==='DRAF'?'selected':''}>DRAF</option></select></div></div><div class="actions" style="margin-top:16px"><button class="secondary" onclick="closeModal()">Batal</button><button class="primary" onclick="saveOperasiSetup()">Simpan Setup</button></div>`;}
 if(type==='holidayEdit'){const r=arguments[1]||{};const idx=arguments[2]??-1;content=`<div class="modalHead"><div><h2 style="margin:0">Edit Cuti</h2><p class="muted">Kemas kini rekod cuti yang dipilih.</p></div><button class="close" onclick="closeModal()">×</button></div><div class="form"><div class="field full"><label>NAMA CUTI</label><input id="modalHolidayName" value="${escapeHtml(r['NAMA CUTI']||'')}"></div><div class="field"><label>TARIKH MULA</label><input id="modalHolidayStart" type="date" value="${escapeHtml(opDateInputValue(r['TARIKH MULA']))}"></div><div class="field"><label>TARIKH TAMAT</label><input id="modalHolidayEnd" type="date" value="${escapeHtml(opDateInputValue(r['TARIKH TAMAT']))}"></div></div><div class="actions" style="margin-top:16px"><button class="secondary" onclick="closeModal()">Batal</button><button class="primary" onclick="updateOperasiCuti(${idx})">Simpan Perubahan</button></div>`;}
 if(type==='holiday')content=`<div class="modalHead"><div><h2 style="margin:0">Tambah Cuti</h2><p class="muted">Cuti akan digunakan oleh Kalendar untuk menentukan tarikh yang tidak beroperasi.</p></div><button class="close" onclick="closeModal()">×</button></div><div class="form"><div class="field full"><label>NAMA CUTI</label><input id="modalHolidayName" placeholder="Contoh: Cuti Pertengahan Penggal"></div><div class="field"><label>TARIKH MULA</label><input id="modalHolidayStart" type="date"></div><div class="field"><label>TARIKH TAMAT</label><input id="modalHolidayEnd" type="date"></div></div><div class="actions" style="margin-top:16px"><button class="secondary" onclick="closeModal()">Batal</button><button class="primary" onclick="saveOperasiCuti()">Simpan Cuti</button></div>`;
@@ -3032,8 +3165,7 @@ if(type==='student')content=`<div class="modalHead"><div><h2 style="margin:0">Da
 <div class="form">
 <div class="field full"><label>NAMA MURID</label><input id="regNama" placeholder="Nama penuh murid"></div>
 <div class="field"><label>JANTINA</label><select id="regJantina"><option value="L">L</option><option value="P">P</option></select></div>
-<div class="field"><label>TAHUN SEMASA</label><input id="regTahun" value="2026" readonly></div>
-<div class="field"><label>KELAS</label><select id="regKelas"><option value="">Pilih kelas</option></select></div>
+<div class="field"><label>PERINGKAT / TAHUN</label><select id="regKelas"><option value="">Pilih peringkat</option><option>Prasekolah</option><option>Tahun 1</option><option>Tahun 2</option><option>Tahun 3</option><option>Tahun 4</option><option>Tahun 5</option><option>Tahun 6</option></select></div>
 <div class="field"><label>UBB</label><select id="regUBB"><option value="">Pilih UBB</option></select></div>
 <div class="field"><label>UKP</label><select id="regUKP"><option value="">Pilih UKP</option></select></div>
 <div class="field"><label>USP</label><select id="regUSP"><option value="">Pilih USP</option></select></div>
@@ -3319,6 +3451,8 @@ async function editMasterMurid(index){
       <div class="field"><label>TAHUN</label><input id="editTahun" value="${escapeHtml(r['TAHUN'])}"></div>
       <div class="field"><label>STATUS MURID</label><select id="editStatus">
         <option ${String(r['STATUS MURID']).toUpperCase()==='AKTIF'?'selected':''}>AKTIF</option>
+        <option ${String(r['STATUS MURID']).toUpperCase()==='BERPINDAH'?'selected':''}>BERPINDAH</option>
+        <option ${String(r['STATUS MURID']).toUpperCase()==='TAMAT SEKOLAH'?'selected':''}>TAMAT SEKOLAH</option>
         <option ${String(r['STATUS MURID']).toUpperCase()==='TIDAK AKTIF'?'selected':''}>TIDAK AKTIF</option>
       </select></div>
       <div class="field"><label>UBB</label><input id="editUBB" value="${escapeHtml(r['UBB'])}"></div>
@@ -3369,6 +3503,7 @@ async function saveEditMasterMurid(index){
       body:JSON.stringify({
         action:'updateMurid',
         oldId:oldRecord['ID MURID'],
+        oldYear:oldRecord['TAHUN'],
         record
       })
     });
@@ -3406,7 +3541,8 @@ async function deleteMasterMurid(index){
       headers:{'Content-Type':'text/plain;charset=utf-8'},
       body:JSON.stringify({
         action:'deleteMurid',
-        idMurid
+        idMurid,
+        tahun:r['TAHUN']
       })
     });
 
