@@ -155,9 +155,9 @@ td.actions button{padding:5px 8px!important;font-size:11px!important;white-space
 <div class="title"><div><h1>Master Tetapan</h1><p>Pusat kawalan profil sekolah dan cycle tahun sistem.</p></div><span class="badge">ADMIN SAHAJA</span></div>
 <div class="grid3">
 <div class="card" style="grid-column:span 2"><h3>Profil Sekolah</h3><div class="form"><div class="field full"><label>NAMA SEKOLAH</label><input value="Sekolah Kebangsaan Dogoton Banggi"></div><div class="field"><label>TAHUN SEMASA</label><input value="2026"></div><div class="field"><label>KOD SEKOLAH</label><input placeholder="Masukkan kod sekolah"></div><div class="field full"><label>ALAMAT / MAKLUMAT PROFIL</label><textarea placeholder="Maklumat yang digunakan dalam dokumen"></textarea></div></div><div class="actions" style="margin-top:16px"><button class="primary" onclick="saved()">Simpan Tetapan</button></div></div>
-<div class="card"><h3>Cycle Tahun</h3><p class="muted" style="font-size:12px">Tahun 4 → 5, Tahun 5 → 6. Tahun 6 tidak dibawa. Jawatan hanya cadangan.</p><div class="field"><label>TAHUN BAHARU</label><input id="nextYear" value="2027"></div><button class="primary" style="margin-top:12px;width:100%" onclick="openModal('rollover')">Sediakan Tahun Baharu</button></div>
+<div class="card"><h3>Cycle Tahun</h3><p class="muted" style="font-size:12px">Murid Prasekolah hingga Tahun 5 dinaikkan satu tahun. Murid Tahun 6 tidak dibawa ke tahun baharu. Jawatan hanya cadangan.</p><div class="field"><label>TAHUN BAHARU</label><input id="nextYear" type="number" min="2000" max="9999" value="2027"></div><button class="primary" style="margin-top:12px;width:100%" onclick="openMuridCycleModal()">Sediakan Tahun Baharu</button></div>
 </div>
-<div class="card"><h3>Aliran Naik Tahun</h3><div class="grid3"><div><span class="badge">TAHUN 4</span><p>→ Tahun 5</p></div><div><span class="badge">TAHUN 5</span><p>→ Tahun 6</p></div><div><span class="badge amber">TAHUN 6</span><p>→ Tidak dibawa</p></div></div></div>
+<div class="card"><h3>Aliran Naik Tahun</h3><div class="grid3"><div><span class="badge">PRASEKOLAH</span><p>→ Tahun 1</p></div><div><span class="badge">TAHUN 1</span><p>→ Tahun 2</p></div><div><span class="badge">TAHUN 2</span><p>→ Tahun 3</p></div><div><span class="badge">TAHUN 3</span><p>→ Tahun 4</p></div><div><span class="badge">TAHUN 4</span><p>→ Tahun 5</p></div><div><span class="badge">TAHUN 5</span><p>→ Tahun 6</p></div><div><span class="badge amber">TAHUN 6</span><p>→ Tidak dibawa</p></div></div></div>
 </section>
 
 <section id="operasi" class="page">
@@ -423,7 +423,7 @@ td.actions button{padding:5px 8px!important;font-size:11px!important;white-space
     <div><b>Pengasingan kehadiran</b><p class="muted" style="font-size:12px">Prasekolah hingga Tahun 3 disimpan dalam Master Murid tetapi tidak disenaraikan untuk kehadiran kokurikulum.</p></div>
     <div><b>Status murid</b><p class="muted" style="font-size:12px">Murid berpindah dan tamat sekolah dikekalkan sebagai sejarah, bukan dipadam terus.</p></div>
   </div>
-  <small class="muted">Cycle Tahun dan perubahan rekod Google Sheets akan disambungkan dalam fasa backend.</small>
+  <small class="muted">Proses Cycle Tahun dijalankan melalui Master Tetapan. Rekod tahun terdahulu dikekalkan sebagai sejarah.</small>
 </div>
 <div class="card" style="display:none">
   <div class="grid3">
@@ -3243,22 +3243,44 @@ async function saveLMK(ctx){
   try{const res=await fetch(WEB_APP_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'saveLMK',record})});const result=await res.json();if(result.status!=='ok')throw new Error(result.message||'Gagal menyimpan LMK.');closeModal();toast(result.message||'LMK disimpan.');await loadLMKModule();}catch(err){toast(err.message||'Gagal menyimpan LMK.');}
 }
 
-async function executeMuridCycle(){
+function openMuridCycleModal(){
+  const targetYear = String(document.getElementById('nextYear')?.value || '').trim();
+  if (!/^\d{4}$/.test(targetYear)) {
+    toast('Sila masukkan tahun baharu dalam format 4 digit.');
+    return;
+  }
+  const sourceYear = String(Number(targetYear) - 1);
+  if (Number(targetYear) < 2001) {
+    toast('Tahun baharu mestilah sekurang-kurangnya 2001.');
+    return;
+  }
+  let content = `<div class="modalHead"><div><h2 style="margin:0">Cycle Master Murid ${sourceYear} → ${targetYear}</h2><p class="muted">Proses terkawal oleh Admin.</p></div><button class="close" onclick="closeModal()">×</button></div>
+  <div class="card" style="background:#f8fafc"><b>Aliran naik tahun yang akan diproses</b>
+  <p class="muted">Prasekolah → Tahun 1</p><p class="muted">Tahun 1 → Tahun 2</p><p class="muted">Tahun 2 → Tahun 3</p><p class="muted">Tahun 3 → Tahun 4</p><p class="muted">Tahun 4 → Tahun 5</p><p class="muted">Tahun 5 → Tahun 6</p>
+  <p class="muted"><b>Tahun 6:</b> Tidak dibawa ke tahun baharu.</p>
+  <p class="muted">ID murid dikekalkan. Rekod tahun sumber dikekalkan sebagai sejarah. Keahlian dan jawatan disalin sebagai rujukan awal untuk semakan guru.</p></div>
+  <p class="muted" style="font-size:12px">Sistem akan mengelakkan rekod sasaran berganda berdasarkan kawalan pendua dalam Apps Script. Sila pastikan tahun sumber dan sasaran betul sebelum meneruskan.</p>
+  <div class="actions"><button class="primary" id="confirmMuridCycle" onclick="executeMuridCycle('${sourceYear}','${targetYear}')">Sahkan Cycle ${sourceYear} → ${targetYear}</button><button class="secondary" onclick="closeModal()">Batal</button></div>`;
+  document.getElementById('modal').innerHTML = content;
+  document.getElementById('modalBack').style.display = 'flex';
+}
+
+async function executeMuridCycle(sourceYear, targetYear){
   const button=document.getElementById('confirmMuridCycle');
   if(button){button.disabled=true;button.textContent='Sedang memproses...';}
   try{
     const response=await fetch(WEB_APP_URL,{
       method:'POST',
       headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body:JSON.stringify({action:'cycleMasterMurid',sourceYear:'2026',targetYear:'2027'})
+      body:JSON.stringify({action:'cycleMasterMurid',sourceYear:String(sourceYear),targetYear:String(targetYear)})
     });
     const result=await response.json();
     if(result.status!=='ok') throw new Error(result.message||'Cycle Master Murid gagal.');
     closeModal();
     await loadMasterMurid();
-    toast((result.message||'Cycle selesai.')+' Disalin: '+(result.copied||0)+'; Tahun 4→5: '+(result.year4To5||0)+'; Tahun 5→6: '+(result.year5To6||0)+'.');
+    toast((result.message||'Cycle selesai.')+' Jumlah rekod baharu: '+(result.copied??0)+'.');
   }catch(err){
-    if(button){button.disabled=false;button.textContent='Sahkan Cycle 2026 → 2027';}
+    if(button){button.disabled=false;button.textContent='Sahkan Cycle '+sourceYear+' → '+targetYear;}
     toast(err.message||'Gagal menjalankan cycle Master Murid.');
   }
 }
@@ -3266,7 +3288,6 @@ async function executeMuridCycle(){
 function openModal(type){
 if(type==='lmk'){openLMKForm(arguments[1]||{});return;}
 let content='';
-if(type==='rollover')content=`<div class="modalHead"><div><h2 style="margin:0">Cycle Master Murid 2026 → 2027</h2><p class="muted">Proses terkawal oleh Admin.</p></div><button class="close" onclick="closeModal()">×</button></div><div class="card" style="background:#f8fafc"><b>Rekod yang akan disalin</b><p class="muted">Tahun 4 → Tahun 5</p><p class="muted">Tahun 5 → Tahun 6</p><p class="muted">Tahun 6 kekal dalam sejarah 2026 dan tidak disalin.</p><p class="muted">ID murid dikekalkan. Rekod 2026 tidak diubah. Keahlian dan jawatan disalin sebagai rujukan awal untuk semakan guru.</p></div><p class="muted" style="font-size:12px">Rekod 2027 yang sudah wujud tidak akan digandakan. Proses ini boleh disemak semula tanpa menambah pendua.</p><div class="actions"><button class="primary" id="confirmMuridCycle" onclick="executeMuridCycle()">Sahkan Cycle 2026 → 2027</button><button class="secondary" onclick="closeModal()">Batal</button></div>`;
 if(type==='opSetup'){const s=masterOperasiSetup||{};content=`<div class="modalHead"><div><h2 style="margin:0">Setup Master Operasi</h2><p class="muted">Sumber kepada Kalendar setahun.</p></div><button class="close" onclick="closeModal()">×</button></div><div class="form"><div class="field"><label>TAHUN</label><input id="modalOpSetupYear" type="number" value="${escapeHtml(s['TAHUN']||'')}"></div><div class="field"><label>TARIKH MULA SEKOLAH</label><input id="modalOpSetupStart" type="date" value="${escapeHtml(s['TARIKH MULA SEKOLAH']||'')}"></div><div class="field"><label>TARIKH AKHIR SEKOLAH</label><input id="modalOpSetupEnd" type="date" value="${escapeHtml(s['TARIKH AKHIR SEKOLAH']||'')}"></div><div class="field"><label>STATUS</label><select id="modalOpSetupStatus"><option value="AKTIF" ${(s['STATUS']||'AKTIF')==='AKTIF'?'selected':''}>AKTIF</option><option value="DRAF" ${(s['STATUS']||'')==='DRAF'?'selected':''}>DRAF</option></select></div></div><div class="actions" style="margin-top:16px"><button class="secondary" onclick="closeModal()">Batal</button><button class="primary" onclick="saveOperasiSetup()">Simpan Setup</button></div>`;}
 if(type==='holidayEdit'){const r=arguments[1]||{};const idx=arguments[2]??-1;content=`<div class="modalHead"><div><h2 style="margin:0">Edit Cuti</h2><p class="muted">Kemas kini rekod cuti yang dipilih.</p></div><button class="close" onclick="closeModal()">×</button></div><div class="form"><div class="field full"><label>NAMA CUTI</label><input id="modalHolidayName" value="${escapeHtml(r['NAMA CUTI']||'')}"></div><div class="field"><label>TARIKH MULA</label><input id="modalHolidayStart" type="date" value="${escapeHtml(opDateInputValue(r['TARIKH MULA']))}"></div><div class="field"><label>TARIKH TAMAT</label><input id="modalHolidayEnd" type="date" value="${escapeHtml(opDateInputValue(r['TARIKH TAMAT']))}"></div></div><div class="actions" style="margin-top:16px"><button class="secondary" onclick="closeModal()">Batal</button><button class="primary" onclick="updateOperasiCuti(${idx})">Simpan Perubahan</button></div>`;}
 if(type==='holiday')content=`<div class="modalHead"><div><h2 style="margin:0">Tambah Cuti</h2><p class="muted">Cuti akan digunakan oleh Kalendar untuk menentukan tarikh yang tidak beroperasi.</p></div><button class="close" onclick="closeModal()">×</button></div><div class="form"><div class="field full"><label>NAMA CUTI</label><input id="modalHolidayName" placeholder="Contoh: Cuti Pertengahan Penggal"></div><div class="field"><label>TARIKH MULA</label><input id="modalHolidayStart" type="date"></div><div class="field"><label>TARIKH TAMAT</label><input id="modalHolidayEnd" type="date"></div></div><div class="actions" style="margin-top:16px"><button class="secondary" onclick="closeModal()">Batal</button><button class="primary" onclick="saveOperasiCuti()">Simpan Cuti</button></div>`;
