@@ -168,8 +168,12 @@ td.actions button{padding:5px 8px!important;font-size:11px!important;white-space
 
 <div class="card" style="margin-bottom:16px">
   <div class="toolbar">
-    <div><h3 style="margin:0">Data Master Operasi</h3><small class="muted">Data dibaca terus daripada Google Sheet Master Operasi.</small></div>
-    <button class="secondary" onclick="loadMasterOperasi()">↻ Segar Semula</button>
+    <div><h3 style="margin:0">Data Master Operasi</h3><small class="muted">Pilih tahun untuk melihat rekod semasa atau rekod terdahulu. Rekod asal kekal dalam Google Sheets.</small></div>
+    <div class="actions" style="flex-wrap:wrap;align-items:center">
+      <label for="operasiYearFilter" style="font-size:11px;font-weight:800;color:#475467">PAPAR TAHUN</label>
+      <select id="operasiYearFilter" style="min-width:115px" onchange="changeOperasiDisplayYear(this.value)"><option value="">Memuatkan...</option></select>
+      <button class="secondary" onclick="loadMasterOperasi()">↻ Segar Semula</button>
+    </div>
   </div>
   <div class="tableWrap" style="max-height:420px;overflow:auto">
     <table id="masterOperasiTable">
@@ -177,6 +181,20 @@ td.actions button{padding:5px 8px!important;font-size:11px!important;white-space
       <tbody><tr><td class="empty">Memuatkan Master Operasi...</td></tr></tbody>
     </table>
   </div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <div class="toolbar">
+    <div><h3 style="margin:0">Jadual Cuti</h3><small class="muted">Rekod cuti semua tahun daripada Master Operasi Cuti. Penapis ini tidak mengubah tahun semasa dalam Setup.</small></div>
+    <div class="actions" style="flex-wrap:wrap;align-items:center">
+      <span class="muted" style="font-size:11px">Mengikut penapis tahun Data Master Operasi di atas</span>
+      <button id="addHolidayBtn" class="primary" onclick="openModal('holiday')">＋ Tambah Cuti</button>
+      <button class="secondary" onclick="loadOperasiCuti()">↻ Segar Semula</button>
+    </div>
+  </div>
+  <div class="tableWrap"><table><thead><tr><th>Bil</th><th>Tahun</th><th>Nama Cuti</th><th>Tarikh Mula</th><th>Tarikh Tamat</th><th>Status</th><th>Tindakan</th></tr></thead>
+    <tbody id="operasiCutiBody"><tr><td colspan="7" class="empty">Membaca jadual cuti...</td></tr></tbody>
+  </table></div>
 </div>
 
 <div class="card">
@@ -206,18 +224,11 @@ td.actions button{padding:5px 8px!important;font-size:11px!important;white-space
         <div class="field"><label>STATUS</label><select id="opSetupStatus" disabled><option>AKTIF</option><option>DRAF</option></select></div>
       </div>
     </div>
-    <div class="card" style="margin-top:16px">
-      <div class="toolbar"><h3 style="margin:0">Jadual Cuti</h3><button class="primary" onclick="openModal('holiday')">＋ Tambah Cuti</button></div>
-      <div class="tableWrap"><table><thead><tr><th>Bil</th><th>Nama Cuti</th><th>Tarikh Mula</th><th>Tarikh Tamat</th><th>Tindakan</th></tr></thead>
-      <tbody id="operasiCutiBody">
-        <tr><td colspan="5" class="empty">Membaca jadual cuti...</td></tr>
-      </tbody></table></div>
-    </div>
   </div>
 
   <div id="opCalendar" class="opPanel" style="display:none">
   <div class="toolbar">
-    <div><h3 style="margin:0">Kalendar Setahun</h3><small class="muted">Klik mana-mana tarikh untuk mengisi aktiviti/program terus ke Master Operasi.</small></div>
+    <div><h3 style="margin:0">Kalendar Setahun</h3><small class="muted">Kalendar operasi menggunakan tahun semasa dalam Setup. Rekod tahun terdahulu boleh dilihat melalui penapis tahun pada Data Master Operasi, Takwim dan jadual perjumpaan.</small></div>
     <div class="actions"><button class="secondary" onclick="renderOperasiCalendar()">↻ Segar Semula</button></div>
   </div>
   <div class="grid4">
@@ -227,7 +238,7 @@ td.actions button{padding:5px 8px!important;font-size:11px!important;white-space
     <div class="card metric"><div class="label">Aktiviti</div><div id="calActivityDays" class="value">—</div><div class="foot">Tarikh beraktiviti</div></div>
   </div>
   <div class="card" style="margin-top:16px">
-    <div class="toolbar"><h3 id="calYearTitle" style="margin:0">Kalendar</h3><span class="badge">KLIK TARIKH UNTUK ISI</span></div>
+    <div class="toolbar"><h3 id="calYearTitle" style="margin:0">Kalendar</h3><span class="badge" id="calendarYearMode">TAHUN SEMASA</span></div>
     <div id="operasiCalendar" style="margin-top:12px"></div>
   </div>
 </div>
@@ -656,6 +667,45 @@ const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwpz6GSd6RKxMc2Eh9N
 
 let masterOperasiCache = [];
 let masterOperasiSetup = {"TAHUN":"2026","TARIKH MULA SEKOLAH":"","TARIKH AKHIR SEKOLAH":"","STATUS":"AKTIF"};
+let operasiDisplayYear = '';
+
+function getOperasiDisplayYear(){
+  return String(operasiDisplayYear || masterOperasiSetup?.['TAHUN'] || '').trim();
+}
+
+function populateOperasiYearFilter(){
+  const select=document.getElementById('operasiYearFilter');
+  if(!select) return;
+  const active=String(masterOperasiSetup?.['TAHUN']||'').trim();
+  const years=new Set();
+  (masterOperasiCache||[]).forEach(r=>{
+    const y=String(r['TAHUN']||'').trim();
+    if(/^\d{4}$/.test(y)) years.add(y);
+  });
+  (operasiCutiCache||[]).forEach(r=>{
+    const y=String(r['TAHUN']||'').trim();
+    if(/^\d{4}$/.test(y)) years.add(y);
+  });
+  if(active) years.add(active);
+  const ordered=[...years].sort((a,b)=>Number(b)-Number(a));
+  if(!operasiDisplayYear || (operasiDisplayYear!=='SEMUA' && !years.has(operasiDisplayYear))) operasiDisplayYear=active || ordered[0] || 'SEMUA';
+  select.innerHTML='<option value="SEMUA" '+(operasiDisplayYear==='SEMUA'?'selected':'')+'>Semua Tahun</option>'+ordered.map(y=>`<option value="${y}" ${y===operasiDisplayYear?'selected':''}>${y}${y===active?' (Semasa)':''}</option>`).join('');
+  if(!ordered.length) select.innerHTML='<option value="SEMUA">Semua Tahun</option><option value="">Tiada tahun</option>';
+  select.value=operasiDisplayYear||active||ordered[0]||'SEMUA';
+}
+
+function changeOperasiDisplayYear(value){
+  operasiDisplayYear=String(value||'').trim();
+  renderMasterOperasiTable();
+  renderOperasiTakwim();
+  renderOperasiMeetings();
+  renderOperasiDuties();
+  renderOperasiCutiTable();
+}
+
+function isOperasiDisplayYearCurrent(){
+  return getOperasiDisplayYear()===String(masterOperasiSetup?.['TAHUN']||'').trim();
+}
 
 async function loadOperasiSetup(){
   try{
@@ -705,6 +755,7 @@ async function saveOperasiSetup(){
     const result=await response.json();
     if(result.status!=='ok') throw new Error(result.message||'Gagal menyimpan Setup.');
     masterOperasiSetup=result.data||record;
+    operasiDisplayYear=String(masterOperasiSetup['TAHUN']||record['TAHUN']);
     closeModal();
     renderOperasiSetup();
     // Apabila tahun aktif berubah, segarkan jadual operasi dan cuti
@@ -719,14 +770,35 @@ async function saveOperasiSetup(){
 
 
 let operasiCutiCache = [];
+function renderOperasiCutiTable(){
+  const body=document.getElementById('operasiCutiBody');
+  if(!body) return;
+  const selectedYear=getOperasiDisplayYear();
+  const visible=(operasiCutiCache||[]).filter(r=>selectedYear==='SEMUA' || String(r['TAHUN']||'').trim()===selectedYear);
+  if(!visible.length){
+    body.innerHTML='<tr><td colspan="7" class="empty">Tiada rekod cuti bagi pilihan tahun ini.</td></tr>';
+    return;
+  }
+  body.innerHTML=visible.map((r,i)=>{
+    const sourceIndex=operasiCutiCache.indexOf(r);
+    return `<tr>
+      <td>${i+1}</td>
+      <td>${escapeHtml(r['TAHUN']||'')}</td>
+      <td>${escapeHtml(r['NAMA CUTI']||'')}</td>
+      <td>${escapeHtml(formatDisplayDate(r['TARIKH MULA']||''))}</td>
+      <td>${escapeHtml(formatDisplayDate(r['TARIKH TAMAT']||''))}</td>
+      <td>${escapeHtml(r['STATUS']||'')}</td>
+      <td><button class="secondary" onclick="editOperasiCuti(${sourceIndex})">Edit</button> <button class="danger" onclick="deleteOperasiCuti(${sourceIndex})">Padam</button></td>
+    </tr>`;
+  }).join('');
+}
 
 async function loadOperasiCuti(){
   const body=document.getElementById('operasiCutiBody');
-  if(!body) return;
-  body.innerHTML='<tr><td colspan="5" class="empty">Membaca jadual cuti...</td></tr>';
+  if(body) body.innerHTML='<tr><td colspan="7" class="empty">Membaca semua rekod cuti...</td></tr>';
   try{
-    const activeYear=String(masterOperasiSetup?.['TAHUN']||'').trim();
-    const response=await fetch(WEB_APP_URL+'?action=operasiCuti&year='+encodeURIComponent(activeYear),{method:'GET',cache:'no-store'});
+    // Tanpa parameter tahun, backend memulangkan semua rekod Master Operasi Cuti.
+    const response=await fetch(WEB_APP_URL+'?action=operasiCuti',{method:'GET',cache:'no-store'});
     const result=await response.json();
     if(result.status==='error') throw new Error(result.message||'Gagal membaca Jadual Cuti.');
     const headers=(result.headers||[]).map(x=>String(x??'').trim().toUpperCase());
@@ -734,29 +806,15 @@ async function loadOperasiCuti(){
     operasiCutiCache=data.map(row=>{
       const obj={}; headers.forEach((name,i)=>obj[name]=row[i]??''); return obj;
     });
-    if(!operasiCutiCache.length){
-      body.innerHTML='<tr><td colspan="5" class="empty">Belum ada cuti didaftarkan.</td></tr>';
-      const card=document.getElementById('opSetupHolidayCard');
-      if(card) card.textContent='0';
-      renderOperasiCalendar();
-      return;
-    }
-    body.innerHTML=operasiCutiCache.map((r,i)=>`
-      <tr>
-        <td>${i+1}</td>
-        <td>${escapeHtml(r['NAMA CUTI']||'')}</td>
-        <td>${escapeHtml(formatDisplayDate(r['TARIKH MULA']||''))}</td>
-        <td>${escapeHtml(formatDisplayDate(r['TARIKH TAMAT']||''))}</td>
-        <td>
-          <button class="secondary" onclick="editOperasiCuti(${i})">Edit</button>
-          <button class="danger" onclick="deleteOperasiCuti(${i})">Padam</button>
-        </td>
-      </tr>`).join('');
+    populateOperasiYearFilter();
+    renderOperasiCutiTable();
+    const activeYear=String(masterOperasiSetup?.['TAHUN']||'').trim();
+    const activeCount=operasiCutiCache.filter(r=>String(r['TAHUN']||'').trim()===activeYear && String(r['STATUS']||'AKTIF').toUpperCase()==='AKTIF').length;
     const card=document.getElementById('opSetupHolidayCard');
-    if(card) card.textContent=String(operasiCutiCache.length);
+    if(card) card.textContent=String(activeCount);
     renderOperasiCalendar();
   }catch(err){
-    body.innerHTML='<tr><td colspan="5" class="empty">Gagal membaca Jadual Cuti: '+escapeHtml(err.message||String(err))+'</td></tr>';
+    if(body) body.innerHTML='<tr><td colspan="7" class="empty">Gagal membaca Jadual Cuti: '+escapeHtml(err.message||String(err))+'</td></tr>';
   }
 }
 
@@ -832,6 +890,7 @@ async function deleteOperasiCuti(index){
 
 
 function openMasterOperasiEdit(index){
+  if(!isOperasiDisplayYearCurrent()){toast('Rekod tahun terdahulu ialah paparan sahaja.');return;}
   const r=masterOperasiCache[index];
   if(!r) return;
 
@@ -1001,8 +1060,20 @@ async function loadMasterOperasi(){
 
       return obj;
     });
-    // PAPARAN PANEL SAHAJA — data penuh tetap dikekalkan dalam cache.
-    const displayHeaders=[
+    populateOperasiYearFilter();
+    renderMasterOperasiTable();
+  }catch(err){
+    thead.innerHTML='';
+    tbody.innerHTML='<tr><td class="empty">Gagal membaca Master Operasi: '+escapeHtml(err.message||String(err))+'</td></tr>';
+  }
+}
+
+function renderMasterOperasiTable(){
+  const table=document.getElementById('masterOperasiTable');
+  if(!table) return;
+  const thead=table.querySelector('thead');
+  const tbody=table.querySelector('tbody');
+  const displayHeaders=[
       'BIL','TAHUN','MINGGU','TARIKH','HARI',
       'AKTIVITI / PROGRAM','UBB','UKP','USP','STATUS JADUAL','TINDAKAN'
     ];
@@ -1025,15 +1096,13 @@ async function loadMasterOperasi(){
 
     thead.innerHTML='<tr>'+displayHeaders.map(x=>'<th>'+escapeHtml(x)+'</th>').join('')+'</tr>';
 
-    const activeYear=String(masterOperasiSetup?.['TAHUN']||'').trim();
-    // Cache menyimpan semua tahun untuk kegunaan modul lain/arkib.
-    // Jadual atas hanya memaparkan rekod bagi tahun aktif.
+    const selectedYear=getOperasiDisplayYear();
     const visibleRows=masterOperasiCache
       .map((r,sourceIndex)=>({r,sourceIndex}))
-      .filter(item=>String(item.r['TAHUN']??'').trim()===activeYear);
+      .filter(item=>selectedYear==='SEMUA' || String(item.r['TAHUN']??'').trim()===selectedYear);
 
     if(!visibleRows.length){
-      tbody.innerHTML='<tr><td class="empty" colspan="'+displayHeaders.length+'">Tiada rekod Master Operasi bagi tahun '+escapeHtml(activeYear||'aktif')+'. Rekod tahun lain kekal dalam Google Sheet.</td></tr>';
+      tbody.innerHTML='<tr><td class="empty" colspan="'+displayHeaders.length+'">Tiada rekod Master Operasi bagi pilihan tahun ini. Rekod tahun lain kekal dalam Google Sheet.</td></tr>';
       renderOperasiTakwim();
       return;
     }
@@ -1050,15 +1119,11 @@ async function loadMasterOperasi(){
       <td>${val(r,'USP')}</td>
       <td>${val(r,'STATUS JADUAL')}</td>
       <td>
-        <button class="secondary" onclick="openMasterOperasiEdit(${sourceIndex})">✏️ Edit</button>
+        <button class="secondary" ${isOperasiDisplayYearCurrent()?'':'disabled title="Paparan tahun terdahulu sahaja"'} onclick="openMasterOperasiEdit(${sourceIndex})">✏️ Edit</button>
       </td>
     </tr>`).join('');
 
-    renderOperasiTakwim();
-  }catch(err){
-    thead.innerHTML='';
-    tbody.innerHTML='<tr><td class="empty">Gagal membaca Master Operasi: '+escapeHtml(err.message||String(err))+'</td></tr>';
-  }
+  renderOperasiTakwim();
 }
 
 // Paparan kekal menggunakan nama unit pendek,
@@ -1131,12 +1196,12 @@ function renderOperasiDuties(){
   const table=document.getElementById('operasiDutiesTable');
   if(!table) return;
   const tbody=table.querySelector('tbody');
-  const year=Number(masterOperasiSetup?.['TAHUN']||'')||new Date().getFullYear();
+  const year=Number(getOperasiDisplayYear())||new Date().getFullYear();
   const rows=(masterOperasiCache||[])
     .map((r,i)=>({r,d:opDateOnly(r['TARIKH']),sourceIndex:i}))
     .filter(x=>{
       if(!x.d) return false;
-      if(Number(x.r['TAHUN']) && Number(x.r['TAHUN'])!==year) return false;
+      if(Number(x.r['TAHUN'])!==year) return false;
       return ['UBB','UKP','USP'].some(k=>String(x.r[k]||'').trim()!=='');
     })
     .sort((a,b)=>a.d-b.d);
@@ -1177,9 +1242,13 @@ function renderOperasiDuties(){
   }).join('');
 
   window.__operasiDutyRows=rows;
+  if(!isOperasiDisplayYearCurrent()){
+    tbody.querySelectorAll('select,button').forEach(el=>{el.disabled=true;el.title='Paparan tahun terdahulu sahaja';});
+  }
 }
 
 async function saveOperasiDuty(sourceIndex, displayIndex){
+  if(!isOperasiDisplayYearCurrent()){toast('Rekod tahun terdahulu ialah paparan sahaja.');return;}
   const r=masterOperasiCache[sourceIndex];
   if(!r) return;
   const row=window.__operasiDutyRows?.[displayIndex];
@@ -1234,12 +1303,12 @@ function renderOperasiMeetings(){
   if(!table) return;
   const tbody=table.querySelector('tbody');
 
-  const year=Number(masterOperasiSetup?.['TAHUN']||'')||new Date().getFullYear();
+  const year=Number(getOperasiDisplayYear())||new Date().getFullYear();
   const rows=(masterOperasiCache||[])
     .map(r=>({r,d:opDateOnly(r['TARIKH'])}))
     .filter(x=>{
       if(!x.d) return false;
-      if(Number(x.r['TAHUN']) && Number(x.r['TAHUN'])!==year) return false;
+      if(Number(x.r['TAHUN'])!==year) return false;
       return ['UBB','UKP','USP'].some(k=>String(x.r[k]||'').trim()!=='');
     })
     .sort((a,b)=>a.d-b.d);
@@ -1285,8 +1354,8 @@ function renderOperasiTakwim(){
   const days=['Ahad','Isnin','Selasa','Rabu','Khamis','Jumaat','Sabtu'];
   const activityValue=r=>String(r['AKTIVITI / PROGRAM']||r['AKTIVITI / MODUL RAT']||'').trim();
   const cellValue=(v)=>escapeHtml(String(v??'').trim()||'—');
-  const year=Number(masterOperasiSetup?.['TAHUN']||'')||new Date().getFullYear();
-  const filtered=rows.filter(x=>!Number(x.r['TAHUN'])||Number(x.r['TAHUN'])===year);
+  const year=Number(getOperasiDisplayYear())||new Date().getFullYear();
+  const filtered=rows.filter(x=>Number(x.r['TAHUN'])===year);
   const count=document.getElementById('takwimCount'); if(count) count.textContent=filtered.length;
   const uc=(key)=>filtered.filter(x=>String(x.r[key]||'').trim()!=='').length;
   const ub=document.getElementById('takwimUbbCount');if(ub)ub.textContent=uc('UBB');
