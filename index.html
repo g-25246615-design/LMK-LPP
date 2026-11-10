@@ -665,6 +665,30 @@ td.actions button{padding:5px 8px!important;font-size:11px!important;white-space
 <script>
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwpz6GSd6RKxMc2Eh9N5NWxMx2QbfMCqMLS6rcvJJqKZSjZNdpuyCsEiyVJOpPO7aGa/exec";
 
+// Kawalan frontend: guru boleh membaca semua menu tetapi tidak boleh menghantar
+// arahan perubahan untuk modul pentadbiran melalui aplikasi ini.
+(function installGuruReadOnlyGuard(){
+  const nativeFetch = window.fetch.bind(window);
+  const adminWriteActions = new Set([
+    'saveOperasiSetup','saveOperasiCuti','createOperasiCuti','updateOperasiCuti',
+    'deleteOperasiCuti','createOperasi','updateOperasiByRow',
+    'createGuru','updateGuru','deleteGuru',
+    'createKelab','updateKelab','deleteKelab',
+    'registerMurid','importMurid','updateMurid','deleteMurid','cycleMasterMurid'
+  ]);
+  window.fetch = function(input, init){
+    const method = String(init && init.method || 'GET').toUpperCase();
+    if(method === 'POST' && String(document.body.dataset.userRole || '').toUpperCase() === 'GURU'){
+      let payload = null;
+      try { payload = JSON.parse((init && init.body) || '{}'); } catch(e) {}
+      if(payload && adminWriteActions.has(String(payload.action || ''))){
+        return Promise.reject(new Error('Akses ditolak. Akaun Guru hanya dibenarkan melihat dan menapis menu Admin.'));
+      }
+    }
+    return nativeFetch(input, init);
+  };
+})();
+
 let masterOperasiCache = [];
 let masterOperasiSetup = {"TAHUN":"2026","TARIKH MULA SEKOLAH":"","TARIKH AKHIR SEKOLAH":"","STATUS":"AKTIF"};
 let operasiDisplayYear = '';
@@ -686,21 +710,24 @@ function populateOperasiYearFilter(){
     const y=String(r['TAHUN']||'').trim();
     if(/^\d{4}$/.test(y)) years.add(y);
   });
-  if(active) years.add(active);
   const ordered=[...years].sort((a,b)=>Number(b)-Number(a));
-  if(!operasiDisplayYear || (operasiDisplayYear!=='SEMUA' && !years.has(operasiDisplayYear))) operasiDisplayYear=active || ordered[0] || 'SEMUA';
-  select.innerHTML='<option value="SEMUA" '+(operasiDisplayYear==='SEMUA'?'selected':'')+'>Semua Tahun</option>'+ordered.map(y=>`<option value="${y}" ${y===operasiDisplayYear?'selected':''}>${y}${y===active?' (Semasa)':''}</option>`).join('');
-  if(!ordered.length) select.innerHTML='<option value="SEMUA">Semua Tahun</option><option value="">Tiada tahun</option>';
-  select.value=operasiDisplayYear||active||ordered[0]||'SEMUA';
+  if(!ordered.length){
+    operasiDisplayYear='';
+    select.innerHTML='<option value="">Tiada tahun</option>';
+    return;
+  }
+  if(!operasiDisplayYear || !years.has(operasiDisplayYear)) operasiDisplayYear=(active && years.has(active)) ? active : ordered[0];
+  select.innerHTML=ordered.map(y=>`<option value="${y}" ${y===operasiDisplayYear?'selected':''}>${y}${y===active?' (Semasa)':''}</option>`).join('');
+  select.value=operasiDisplayYear;
 }
 
 function changeOperasiDisplayYear(value){
   operasiDisplayYear=String(value||'').trim();
   renderMasterOperasiTable();
+  renderOperasiCutiTable();
   renderOperasiTakwim();
   renderOperasiMeetings();
   renderOperasiDuties();
-  renderOperasiCutiTable();
 }
 
 function isOperasiDisplayYearCurrent(){
@@ -774,7 +801,7 @@ function renderOperasiCutiTable(){
   const body=document.getElementById('operasiCutiBody');
   if(!body) return;
   const selectedYear=getOperasiDisplayYear();
-  const visible=(operasiCutiCache||[]).filter(r=>selectedYear==='SEMUA' || String(r['TAHUN']||'').trim()===selectedYear);
+  const visible=(operasiCutiCache||[]).filter(r=>String(r['TAHUN']||'').trim()===selectedYear);
   if(!visible.length){
     body.innerHTML='<tr><td colspan="7" class="empty">Tiada rekod cuti bagi pilihan tahun ini.</td></tr>';
     return;
@@ -1099,7 +1126,7 @@ function renderMasterOperasiTable(){
     const selectedYear=getOperasiDisplayYear();
     const visibleRows=masterOperasiCache
       .map((r,sourceIndex)=>({r,sourceIndex}))
-      .filter(item=>selectedYear==='SEMUA' || String(item.r['TAHUN']??'').trim()===selectedYear);
+      .filter(item=>String(item.r['TAHUN']??'').trim()===selectedYear);
 
     if(!visibleRows.length){
       tbody.innerHTML='<tr><td class="empty" colspan="'+displayHeaders.length+'">Tiada rekod Master Operasi bagi pilihan tahun ini. Rekod tahun lain kekal dalam Google Sheet.</td></tr>';
@@ -1435,11 +1462,12 @@ function go(id){
 
 function applyUserRole(user){
   const isAdmin = String(user.peranan||'').trim().toUpperCase()==='ADMIN';
+  // Semua peranan melihat semua menu. Perbezaannya hanya pada kebenaran tindakan.
   const adminLabel = document.querySelectorAll('.sectionLabel');
   const adminNav = document.querySelectorAll('.sidebar .nav');
-  // Navigation is arranged as: Utama, Guru Penasihat, Admin.
-  if(adminLabel[2]) adminLabel[2].style.display = isAdmin ? '' : 'none';
-  if(adminNav[2]) adminNav[2].style.display = isAdmin ? '' : 'none';
+  if(adminLabel[2]) adminLabel[2].style.display = '';
+  if(adminNav[2]) adminNav[2].style.display = '';
+  document.body.dataset.userRole = isAdmin ? 'ADMIN' : 'GURU';
 
   document.getElementById('currentRoleBadge').textContent = isAdmin ? 'ADMIN' : 'GURU';
   document.getElementById('currentUserName').textContent = user.nama || user.id || '';
