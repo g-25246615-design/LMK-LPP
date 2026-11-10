@@ -1460,6 +1460,78 @@ function go(id){
   if(id==='lmk')loadLMKModule();
 }
 
+function lockMasterModulesForGuru(){
+  if(String(document.body.dataset.userRole||'').toUpperCase()!=='GURU') return;
+
+  const filterIds = new Set([
+    'operasiYearFilter',
+    'searchMasterGuru',
+    'studentYearFilter','studentStageFilter','studentStatusFilter','searchMasterMurid',
+    'searchMasterKelab'
+  ]);
+  const allowedButtons = (el) => {
+    if(!el || el.tagName!=='BUTTON') return false;
+    if(el.closest('#opTabs')) return true;
+    const action=String(el.getAttribute('onclick')||'');
+    return action.includes('loadMasterOperasi()') || action.includes('loadOperasiCuti()');
+  };
+
+  const sections=['tetapan','operasi','guru','murid','kelab'];
+  sections.forEach(id=>{
+    const root=document.getElementById(id);
+    if(!root) return;
+    root.querySelectorAll('input,textarea,select').forEach(el=>{
+      if(filterIds.has(el.id)){
+        el.disabled=false;
+        el.readOnly=false;
+        el.removeAttribute('disabled');
+        el.removeAttribute('readonly');
+      }else if(el.tagName==='SELECT'){
+        el.disabled=true;
+      }else{
+        el.readOnly=true;
+        el.setAttribute('readonly','readonly');
+      }
+    });
+    root.querySelectorAll('button').forEach(el=>{
+      if(allowedButtons(el)){
+        el.disabled=false;
+        el.classList.remove('guru-readonly-disabled');
+      }else{
+        el.disabled=true;
+        el.classList.add('guru-readonly-disabled');
+        el.setAttribute('aria-disabled','true');
+      }
+    });
+    root.querySelectorAll('[contenteditable="true"]').forEach(el=>{
+      el.setAttribute('contenteditable','false');
+    });
+  });
+}
+
+document.addEventListener('click',function(event){
+  if(String(document.body.dataset.userRole||'').toUpperCase()!=='GURU') return;
+  const control=event.target.closest('button,[role="button"],a[onclick]');
+  if(!control) return;
+  const section=control.closest('#tetapan,#operasi,#guru,#murid,#kelab');
+  if(!section) return;
+  if(section.id==='operasi' && (control.closest('#opTabs') || String(control.getAttribute('onclick')||'').includes('loadMasterOperasi()') || String(control.getAttribute('onclick')||'').includes('loadOperasiCuti()'))) return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+},true);
+
+function installMasterReadOnlyObserver(){
+  if(String(document.body.dataset.userRole||'').toUpperCase()!=='GURU') return;
+  if(window.__masterReadOnlyObserver) window.__masterReadOnlyObserver.disconnect();
+  const observer=new MutationObserver(()=>lockMasterModulesForGuru());
+  ['tetapan','operasi','guru','murid','kelab'].forEach(id=>{
+    const root=document.getElementById(id);
+    if(root) observer.observe(root,{childList:true,subtree:true});
+  });
+  window.__masterReadOnlyObserver=observer;
+  lockMasterModulesForGuru();
+}
+
 function applyUserRole(user){
   const isAdmin = String(user.peranan||'').trim().toUpperCase()==='ADMIN';
   // Semua peranan melihat semua menu. Perbezaannya hanya pada kebenaran tindakan.
@@ -1473,10 +1545,12 @@ function applyUserRole(user){
   document.getElementById('currentUserName').textContent = user.nama || user.id || '';
   document.getElementById('currentUserAvatar').textContent = String(user.nama||user.id||'U').trim().charAt(0).toUpperCase();
 
-  // Hide known ADMIN-only action buttons from the GURU interface.
+  // Guru boleh melihat dan menapis semua lima Master, tetapi tidak boleh mengubah rekod.
   if(!isAdmin){
-    document.querySelectorAll('#tetapan .title button, #operasi .title button, #guru .title button, #murid .title button, #kelab .title button').forEach(el=>el.style.display='none');
-    document.querySelectorAll('#tetapan .primary, #operasi .primary, #guru .primary, #murid .primary, #kelab .primary, #recycle .primary').forEach(el=>el.style.display='none');
+    installMasterReadOnlyObserver();
+  }else if(window.__masterReadOnlyObserver){
+    window.__masterReadOnlyObserver.disconnect();
+    window.__masterReadOnlyObserver=null;
   }
 }
 
